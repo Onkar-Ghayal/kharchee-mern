@@ -24,7 +24,9 @@ export default function FriendCard({
                         <div className="friend-name-row">
                             <h3 className="friend-name-title">{friend.name}</h3>
                             {friend.qrCode ? (
-                                <span className="friend-qr-tag uploaded" title="Payment QR Attached">📸 QR Ready</span>
+                                <span className="friend-qr-tag uploaded" title="Payment QR Attached">
+                                    📸 {friend.qrPlatform ? `${friend.qrPlatform} QR` : "QR Ready"}
+                                </span>
                             ) : friend.qrRequestStatus === "pending" ? (
                                 <span className="friend-qr-tag pending" title="QR Request Pending">⏳ QR Pending</span>
                             ) : null}

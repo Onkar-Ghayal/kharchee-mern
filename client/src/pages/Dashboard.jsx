@@ -210,15 +210,14 @@ export default function Dashboard() {
         setAddModalOpen(true);
     };
 
-    const handleAddFriendSubmit = async ({ name, mobile, upiId, upiApp, qrCode, qrRequestStatus, sendWhatsAppRequest }) => {
+    const handleAddFriendSubmit = async ({ name, mobile, qrCode, qrPlatform, qrRequestStatus, sendWhatsAppRequest }) => {
         try {
             if (!editingFriend) {
                 const res = await api.post("/friends", {
                     name,
                     mobile,
-                    upiId,
-                    upiApp,
                     qrCode,
+                    qrPlatform,
                     qrRequestStatus
                 });
                 showToast("Friend added successfully with ₹0 balance", "success");
@@ -235,9 +234,8 @@ export default function Dashboard() {
                 await api.put(`/friends/${editingFriend._id}`, {
                     name,
                     mobile,
-                    upiId,
-                    upiApp,
                     qrCode,
+                    qrPlatform,
                     qrRequestStatus
                 });
                 showToast("Friend details updated", "info");

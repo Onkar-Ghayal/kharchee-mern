@@ -47,18 +47,13 @@ const friendSchema = new mongoose.Schema(
             trim: true,
             default: ""
         },
-        upiId: {
-            type: String,
-            trim: true,
-            default: ""
-        },
-        upiApp: {
-            type: String,
-            trim: true,
-            default: "Google Pay"
-        },
         qrCode: {
             type: String,
+            default: ""
+        },
+        qrPlatform: {
+            type: String,
+            trim: true,
             default: ""
         },
         qrRequestStatus: {

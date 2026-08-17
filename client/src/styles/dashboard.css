@@ -1557,14 +1557,20 @@
 }
 
 /* -------------------- ADD FRIEND MODAL QR CONTROLS -------------------- */
-.modal-qr-preview-box {
+.modal-qr-uploaded-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-light);
+    border-radius: 14px;
+}
+
+.modal-qr-preview-row {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.65rem 0.85rem;
-    background: var(--bg-secondary);
-    border: 1.5px solid var(--border-light);
-    border-radius: 12px;
 }
 
 .modal-qr-thumb {
@@ -1604,20 +1610,83 @@
     text-decoration: underline;
 }
 
+/* QR Platform Selector Chips */
+.qr-platform-select-box {
+    border-top: 1px solid var(--border-light);
+    padding-top: 0.65rem;
+}
+
+.qr-platform-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.45rem;
+}
+
+.qr-platform-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
+}
+
+.qr-platform-chip-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.65rem;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-light);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.qr-platform-chip-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.qr-platform-chip-btn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.dark-mode .qr-platform-chip-btn.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+}
+
+.platform-icon {
+    font-size: 0.95rem;
+}
+
+.platform-name {
+    font-size: 0.775rem;
+    font-weight: 700;
+}
+
 .qr-choice-options-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.65rem;
 }
 
 .btn-upload-qr-file {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 38px;
+    gap: 0.45rem;
+    height: 44px;
     background: var(--bg-secondary);
     border: 1.5px dashed var(--accent-primary);
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 0.825rem;
     font-weight: 700;
     color: var(--accent-primary);
@@ -1629,23 +1698,90 @@
     background: rgba(99, 102, 241, 0.08);
 }
 
+.upload-icon {
+    font-size: 1.05rem;
+}
+
 .checkbox-qr-request-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.775rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-secondary);
     cursor: pointer;
+    padding: 0.25rem 0;
 }
 
 .checkbox-qr-request-row input {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     accent-color: #22c55e;
 }
 
 /* -------------------- PAYMENT MODAL OFFICIAL QR & REQUEST STATES -------------------- */
+.pay-qr-picker-subcard {
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-light);
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+    margin: 0.85rem 0 1rem 0;
+}
+
+.pay-qr-picker-subcard h4 {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.75rem 0;
+}
+
+.picker-image-thumb-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.picker-thumb-img {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 4px;
+    border: 1px solid var(--border-light);
+    object-fit: contain;
+}
+
+.picker-actions-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+
+.btn-save-picker-qr {
+    flex: 1;
+    height: 38px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.825rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.btn-cancel-picker-qr {
+    height: 38px;
+    padding: 0 1rem;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-light);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
 .pay-qr-display-section {
     margin: 0.85rem 0 1rem 0;
 }

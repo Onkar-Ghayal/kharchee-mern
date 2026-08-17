@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 
-const UPI_APPS = [
-    { id: "Google Pay", label: "Google Pay" },
-    { id: "PhonePe", label: "PhonePe" },
-    { id: "Paytm", label: "Paytm" },
-    { id: "BHIM / Other", label: "BHIM / Other" }
+const QR_PLATFORMS = [
+    { id: "PhonePe", label: "PhonePe", icon: "🟣" },
+    { id: "Google Pay", label: "Google Pay", icon: "🔵" },
+    { id: "Paytm", label: "Paytm", icon: "🔷" },
+    { id: "BHIM / Other", label: "BHIM / Other", icon: "🇮🇳" }
 ];
 
 export default function AddFriendModal({ open, editingFriend, onClose, onSubmit }) {
     const [name, setName] = useState("");
     const [mobile, setMobile] = useState("");
-    const [upiId, setUpiId] = useState("");
-    const [upiApp, setUpiApp] = useState("Google Pay");
     const [qrCode, setQrCode] = useState("");
+    const [qrPlatform, setQrPlatform] = useState("PhonePe");
     const [sendWhatsAppRequest, setSendWhatsAppRequest] = useState(false);
     const [error, setError] = useState("");
 
@@ -22,16 +21,14 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
         if (editingFriend) {
             setName(editingFriend.name || "");
             setMobile(editingFriend.mobile || "");
-            setUpiId(editingFriend.upiId || "");
-            setUpiApp(editingFriend.upiApp || "Google Pay");
             setQrCode(editingFriend.qrCode || "");
+            setQrPlatform(editingFriend.qrPlatform || "PhonePe");
             setSendWhatsAppRequest(false);
         } else {
             setName("");
             setMobile("");
-            setUpiId("");
-            setUpiApp("Google Pay");
             setQrCode("");
+            setQrPlatform("PhonePe");
             setSendWhatsAppRequest(false);
         }
         setError("");
@@ -45,7 +42,7 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            setError("Please upload an image file (PNG, JPG, WEBP)");
+            setError("Please upload an image file (PNG, JPG, JPEG, WEBP)");
             return;
         }
 
@@ -89,7 +86,6 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
 
         const trimmedName = name.trim();
         const trimmedMobile = mobile.trim();
-        const trimmedUpi = upiId.trim();
 
         if (!trimmedName) {
             setError("Please enter your friend's name");
@@ -97,7 +93,7 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
         }
 
         if (!trimmedMobile) {
-            setError("WhatsApp / Mobile number is compulsory");
+            setError("WhatsApp Mobile Number is compulsory");
             return;
         }
 
@@ -106,17 +102,11 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
             return;
         }
 
-        if (trimmedUpi && !trimmedUpi.includes("@")) {
-            setError("Please enter a valid UPI ID (e.g. rahul@okhdfcbank or 9876543210@ybl)");
-            return;
-        }
-
         onSubmit({
             name: trimmedName,
             mobile: trimmedMobile,
-            upiId: trimmedUpi,
-            upiApp,
             qrCode,
+            qrPlatform: qrCode ? qrPlatform : "",
             qrRequestStatus: qrCode ? "uploaded" : sendWhatsAppRequest ? "pending" : (editingFriend?.qrRequestStatus || "not_requested"),
             sendWhatsAppRequest
         });
@@ -146,9 +136,9 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                         />
                     </div>
 
-                    {/* 2. WhatsApp / Mobile Number (Compulsory) */}
+                    {/* 2. WhatsApp Mobile Number (Compulsory - No slash) */}
                     <div className="form-group">
-                        <label>WhatsApp / Mobile Number <span className="required-star">*</span></label>
+                        <label>WhatsApp Mobile Number <span className="required-star">*</span></label>
                         <div className="phone-input-wrap">
                             <span className="country-code-prefix">+91</span>
                             <input
@@ -162,30 +152,53 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                         </div>
                     </div>
 
-                    {/* 3. QR Code Upload or WhatsApp Request (Optional) */}
-                    <div className="form-group">
+                    {/* 3. Payment QR Code (Optional) */}
+                    <div className="form-group qr-upload-section-group">
                         <div className="form-label-row">
                             <label>Payment QR Code <span className="optional-tag">(Optional)</span></label>
                         </div>
 
                         {qrCode ? (
-                            <div className="modal-qr-preview-box">
-                                <img src={qrCode} alt="Friend QR" className="modal-qr-thumb" />
-                                <div className="modal-qr-meta">
-                                    <span className="qr-attached-label">✓ QR Code Attached</span>
-                                    <button
-                                        type="button"
-                                        className="btn-remove-qr-thumb"
-                                        onClick={() => setQrCode("")}
-                                    >
-                                        Remove QR
-                                    </button>
+                            /* When QR Code IS Uploaded: Show Image Preview + Platform Selector */
+                            <div className="modal-qr-uploaded-card">
+                                <div className="modal-qr-preview-row">
+                                    <img src={qrCode} alt="Friend QR" className="modal-qr-thumb" />
+                                    <div className="modal-qr-meta">
+                                        <span className="qr-attached-label">✓ QR Code Uploaded</span>
+                                        <button
+                                            type="button"
+                                            className="btn-remove-qr-thumb"
+                                            onClick={() => setQrCode("")}
+                                        >
+                                            ✕ Remove QR
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Platform of QR Code (Google Pay, PhonePe, Paytm) */}
+                                <div className="qr-platform-select-box">
+                                    <label className="qr-platform-label">Select Platform of this QR Code:</label>
+                                    <div className="qr-platform-chips-grid">
+                                        {QR_PLATFORMS.map((platform) => (
+                                            <button
+                                                key={platform.id}
+                                                type="button"
+                                                className={`qr-platform-chip-btn ${qrPlatform === platform.id ? "active" : ""}`}
+                                                onClick={() => setQrPlatform(platform.id)}
+                                            >
+                                                <span className="platform-icon">{platform.icon}</span>
+                                                <span className="platform-name">{platform.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         ) : (
+                            /* When NO QR Uploaded: Upload / Screenshot Button + Send Request Checkbox below */
                             <div className="qr-choice-options-wrapper">
                                 <label className="btn-upload-qr-file" htmlFor="friend-qr-file">
-                                    <span>📸 Upload QR Screenshot</span>
+                                    <span className="upload-icon">📸</span>
+                                    <span>Upload / Screenshot of Friend's QR Code</span>
                                     <input
                                         id="friend-qr-file"
                                         type="file"
@@ -202,41 +215,11 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                                             checked={sendWhatsAppRequest}
                                             onChange={(e) => setSendWhatsAppRequest(e.target.checked)}
                                         />
-                                        <span>📲 Send QR Code Request via WhatsApp after saving</span>
+                                        <span>📲 Send request to friend for QR Code via WhatsApp</span>
                                     </label>
                                 )}
                             </div>
                         )}
-                    </div>
-
-                    {/* 4. UPI ID (Optional fallback) */}
-                    <div className="form-group">
-                        <div className="form-label-row">
-                            <label>UPI ID <span className="optional-tag">(Optional)</span></label>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="e.g. rahul@okhdfcbank or 9876543210@ybl"
-                            value={upiId}
-                            onChange={(e) => setUpiId(e.target.value)}
-                        />
-                    </div>
-
-                    {/* 5. Select App Platform */}
-                    <div className="form-group">
-                        <label>UPI Platform / App <span className="optional-tag">(Optional)</span></label>
-                        <div className="upi-app-selector-grid">
-                            {UPI_APPS.map((app) => (
-                                <button
-                                    key={app.id}
-                                    type="button"
-                                    className={`upi-app-choice-btn ${upiApp === app.id ? "active" : ""}`}
-                                    onClick={() => setUpiApp(app.id)}
-                                >
-                                    <span>{app.label}</span>
-                                </button>
-                            ))}
-                        </div>
                     </div>
 
                     <p className="modal-info-note">
