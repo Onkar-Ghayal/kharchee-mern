@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import jsQR from "jsqr";
 import api from "../../api/axios";
 
 const QR_PLATFORMS = [
@@ -7,6 +8,42 @@ const QR_PLATFORMS = [
     { id: "Paytm", label: "Paytm", icon: "🔷" },
     { id: "BHIM / Other", label: "BHIM / Other", icon: "🇮🇳" }
 ];
+
+// Helper to decode QR code string from image base64 / URL using canvas & jsQR
+const decodeQrFromImage = (imageSrc) => {
+    return new Promise((resolve) => {
+        if (!imageSrc) return resolve(null);
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert"
+                });
+                if (code && code.data) {
+                    resolve(code.data);
+                } else {
+                    // Try with invert if first attempt failed
+                    const codeInverted = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "onlyInvert"
+                    });
+                    resolve(codeInverted ? codeInverted.data : null);
+                }
+            } catch (err) {
+                console.error("QR decode canvas error:", err);
+                resolve(null);
+            }
+        };
+        img.onerror = () => resolve(null);
+        img.src = imageSrc;
+    });
+};
 
 export default function PaymentModal({
     open,
@@ -20,8 +57,14 @@ export default function PaymentModal({
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("");
     const [recording, setRecording] = useState(false);
+    const [launching, setLaunching] = useState(false);
     const [copied, setCopied] = useState("");
     const [error, setError] = useState("");
+
+    // Return from payment platform verification state
+    const [waitingForReturn, setWaitingForReturn] = useState(false);
+    const [launchedPayment, setLaunchedPayment] = useState(null);
+    const [showReturnConfirm, setShowReturnConfirm] = useState(false);
 
     // QR Upload modal inside payment modal
     const [uploadingQr, setUploadingQr] = useState(false);
@@ -32,6 +75,9 @@ export default function PaymentModal({
     // Initialize state when modal opens
     useEffect(() => {
         if (!open) {
+            setWaitingForReturn(false);
+            setLaunchedPayment(null);
+            setShowReturnConfirm(false);
             setShowUploadPicker(false);
             setPickerImage("");
             return;
@@ -52,9 +98,37 @@ export default function PaymentModal({
         setDescription("");
         setError("");
         setCopied("");
+        setWaitingForReturn(false);
+        setLaunchedPayment(null);
+        setShowReturnConfirm(false);
         setShowUploadPicker(false);
         setPickerImage("");
     }, [open, preselectedFriend, friends]);
+
+    // Detect when user returns to Kharchee after payment
+    useEffect(() => {
+        if (!waitingForReturn || !launchedPayment) return;
+
+        const handleReturn = () => {
+            if (document.visibilityState === "visible") {
+                setShowReturnConfirm(true);
+                setWaitingForReturn(false);
+            }
+        };
+
+        const handleFocus = () => {
+            setShowReturnConfirm(true);
+            setWaitingForReturn(false);
+        };
+
+        window.addEventListener("focus", handleFocus);
+        document.addEventListener("visibilitychange", handleReturn);
+
+        return () => {
+            window.removeEventListener("focus", handleFocus);
+            document.removeEventListener("visibilitychange", handleReturn);
+        };
+    }, [waitingForReturn, launchedPayment]);
 
     const activeFriend = useMemo(() => {
         return friends.find((f) => f._id === selectedFriendId) || preselectedFriend || null;
@@ -81,7 +155,6 @@ export default function PaymentModal({
             const message = `Hey ${activeFriend.name}! Please upload a screenshot of your PhonePe / Google Pay / Paytm QR code so I can pay you directly on Kharchee: ${uploadUrl}`;
             const waUrl = `https://wa.me/91${activeFriend.mobile}?text=${encodeURIComponent(message)}`;
 
-            // Mark status as pending
             await api.put(`/friends/${activeFriend._id}/qr-status`, { status: "pending" });
             if (onFriendUpdated) onFriendUpdated();
 
@@ -155,21 +228,87 @@ export default function PaymentModal({
         }
     };
 
-    // Manual Instant Mark as Paid
-    const handleManualMarkPaid = async () => {
+    // Automatic Scan QR Screenshot & Translocate to Payment Platform
+    const handleScanAndPay = async () => {
+        setError("");
         const num = Number(amount);
         if (!num || isNaN(num) || num <= 0) {
             setError("Please enter a valid payment amount first");
             return;
         }
-        if (!activeFriend) return;
 
-        setRecording(true);
+        if (!activeFriend) {
+            setError("Please select a friend to pay");
+            return;
+        }
+
+        setLaunching(true);
+
         try {
-            await onPaymentSuccess(activeFriend._id, {
+            let targetUri = "";
+            const validAmount = num.toFixed(2);
+            const note = encodeURIComponent(description.trim() || "Kharchee Payment");
+
+            // 1. If friend has a QR Code screenshot, scan and decode it automatically
+            if (activeFriend.qrCode) {
+                const decodedData = await decodeQrFromImage(activeFriend.qrCode);
+                if (decodedData && (decodedData.startsWith("upi://") || decodedData.includes("pa="))) {
+                    targetUri = decodedData;
+                    // Append or update amount
+                    if (targetUri.includes("am=")) {
+                        targetUri = targetUri.replace(/am=[^&]*/, `am=${validAmount}`);
+                    } else {
+                        targetUri += `&am=${validAmount}`;
+                    }
+                    if (note && !targetUri.includes("tn=")) {
+                        targetUri += `&tn=${note}`;
+                    }
+                    if (!targetUri.includes("cu=")) {
+                        targetUri += `&cu=INR`;
+                    }
+                }
+            }
+
+            // 2. Fallback if decoded string is empty or no QR
+            if (!targetUri) {
+                const friendVpa = `${activeFriend.mobile}@upi`;
+                targetUri = `upi://pay?pa=${encodeURIComponent(friendVpa)}&pn=${encodeURIComponent(activeFriend.name)}&am=${validAmount}&cu=INR`;
+                if (note) targetUri += `&tn=${note}`;
+            }
+
+            // Save state before translocating
+            setLaunchedPayment({
+                friend: activeFriend,
                 amount: num,
                 description: description.trim(),
-                upiApp: activeFriend.qrPlatform || "QR Code"
+                platform: activeFriend.qrPlatform || "UPI"
+            });
+            setWaitingForReturn(true);
+
+            // Translocate to Payment Platform
+            window.location.href = targetUri;
+
+            // Fallback timeout to show return popup if visibilitychange is delayed
+            setTimeout(() => {
+                setShowReturnConfirm(true);
+            }, 2500);
+        } catch (err) {
+            console.error("Payment launch error:", err);
+            setError("Failed to launch payment app. You can also scan the QR code manually.");
+        } finally {
+            setLaunching(false);
+        }
+    };
+
+    // Confirm Payment Success in Ledger
+    const handleConfirmPaymentSuccess = async () => {
+        if (!launchedPayment) return;
+        setRecording(true);
+        try {
+            await onPaymentSuccess(launchedPayment.friend._id, {
+                amount: launchedPayment.amount,
+                description: launchedPayment.description,
+                upiApp: launchedPayment.platform || "UPI"
             });
             onClose();
         } catch (err) {
@@ -179,260 +318,318 @@ export default function PaymentModal({
         }
     };
 
+    // Payment Failed / Cancelled: Dismiss popup & leave balance unchanged
+    const handleConfirmPaymentFailed = () => {
+        setWaitingForReturn(false);
+        setLaunchedPayment(null);
+        setShowReturnConfirm(false);
+    };
+
     return (
         <div className="modal" style={{ display: "flex" }}>
             <div className="modal-content professional-pay-card">
-                {/* Modal Header */}
-                <div className="pay-modal-header">
-                    <div className="pay-header-left">
-                        <div className="pay-header-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                {/* 1. Return from Payment Platform Confirmation Popup */}
+                {showReturnConfirm && launchedPayment ? (
+                    <div className="payment-return-verify-card">
+                        <div className="verify-badge-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
                             </svg>
                         </div>
-                        <div>
-                            <h3>Pay Friend</h3>
-                            <p className="pay-header-sub">Scan Payment QR & Clear Balance</p>
-                        </div>
-                    </div>
-                    <button type="button" className="btn-close-pay-modal" onClick={onClose} aria-label="Close">
-                        ✕
-                    </button>
-                </div>
 
-                {/* Recipient Context Card */}
-                {activeFriend && (
-                    <div className={`recipient-summary-box ${isOwed ? "status-owed" : isDue ? "status-due" : "status-settled"}`}>
-                        <div className="recipient-avatar">
-                            {activeFriend.name ? activeFriend.name.charAt(0).toUpperCase() : "F"}
-                        </div>
-                        <div className="recipient-meta">
-                            <h4 className="recipient-name">{activeFriend.name}</h4>
-                            <div className="recipient-phone-row">
-                                <span>📱 +91 {activeFriend.mobile}</span>
-                                <button
-                                    type="button"
-                                    className="btn-copy-tag"
-                                    onClick={() => copyToClipboard(activeFriend.mobile, "Number")}
-                                >
-                                    {copied === "Number" ? "✓ Copied" : "Copy"}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="recipient-balance-status">
-                            <span className="status-caption">
-                                {isOwed ? "You Owe" : isDue ? "Owes You" : "Balance"}
-                            </span>
-                            <span className="status-val">
-                                ₹{Math.abs(activeFriend.currentAmount).toLocaleString("en-IN")}
-                            </span>
-                        </div>
-                    </div>
-                )}
+                        <h3 className="verify-modal-title">Did your payment go through?</h3>
+                        <p className="verify-modal-sub">
+                            You initiated a payment of{" "}
+                            <strong>₹{launchedPayment.amount.toLocaleString("en-IN")}</strong> to{" "}
+                            <strong>{launchedPayment.friend.name}</strong> via{" "}
+                            {launchedPayment.platform || "UPI"}.
+                        </p>
 
-                {/* Amount & Presets */}
-                <div className="pay-form-section">
-                    <label className="pay-form-label">Amount (₹) *</label>
-                    <div className="pay-amount-input-box">
-                        <span className="pay-currency-symbol">₹</span>
-                        <input
-                            type="number"
-                            className="pay-amount-input"
-                            placeholder="0"
-                            value={amount}
-                            min="1"
-                            required
-                            autoFocus
-                            onChange={(e) => setAmount(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="pay-quick-presets">
-                        <button type="button" onClick={() => setAmount("50")}>+₹50</button>
-                        <button type="button" onClick={() => setAmount("100")}>+₹100</button>
-                        <button type="button" onClick={() => setAmount("200")}>+₹200</button>
-                        <button type="button" onClick={() => setAmount("500")}>+₹500</button>
-                        {isOwed && (
+                        <div className="verify-actions-grid">
                             <button
                                 type="button"
-                                className="btn-preset-full-due"
-                                onClick={() => setAmount(String(Math.abs(activeFriend.currentAmount)))}
+                                className="btn-verify-success"
+                                disabled={recording}
+                                onClick={handleConfirmPaymentSuccess}
                             >
-                                Clear Due (₹{Math.abs(activeFriend.currentAmount)})
+                                {recording ? "Updating Ledger..." : "✓ Yes, Payment Successful"}
                             </button>
-                        )}
-                    </div>
-                </div>
 
-                {/* Note / Reason */}
-                <div className="pay-form-section">
-                    <label className="pay-form-label">Note / Reason (Optional)</label>
-                    <input
-                        type="text"
-                        className="pay-description-input"
-                        placeholder="e.g. Dinner share, Chai, Movie, Flat rent"
-                        value={description}
-                        maxLength={100}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                </div>
-
-                {/* QR Upload Modal Sub-flow inside Pay Card */}
-                {showUploadPicker ? (
-                    <div className="pay-qr-picker-subcard">
-                        <h4>Select Platform for Uploaded QR:</h4>
-                        <div className="picker-image-thumb-wrap">
-                            <img src={pickerImage} alt="Preview" className="picker-thumb-img" />
-                        </div>
-
-                        <div className="qr-platform-chips-grid">
-                            {QR_PLATFORMS.map((platform) => (
-                                <button
-                                    key={platform.id}
-                                    type="button"
-                                    className={`qr-platform-chip-btn ${pickerPlatform === platform.id ? "active" : ""}`}
-                                    onClick={() => setPickerPlatform(platform.id)}
-                                >
-                                    <span className="platform-icon">{platform.icon}</span>
-                                    <span className="platform-name">{platform.label}</span>
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="picker-actions-row">
                             <button
                                 type="button"
-                                className="btn-save-picker-qr"
-                                disabled={uploadingQr}
-                                onClick={handleSavePickedQr}
+                                className="btn-verify-failed"
+                                disabled={recording}
+                                onClick={handleConfirmPaymentFailed}
                             >
-                                {uploadingQr ? "Saving..." : "✓ Save QR Code"}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn-cancel-picker-qr"
-                                onClick={() => {
-                                    setShowUploadPicker(false);
-                                    setPickerImage("");
-                                }}
-                            >
-                                Cancel
+                                ✕ No, Payment Failed / Cancelled
                             </button>
                         </div>
+
+                        <p className="verify-security-note">
+                            If failed or cancelled, your Kharchee balance will remain completely untouched.
+                        </p>
                     </div>
                 ) : (
-                    /* QR CODE SECTION (Friend's Uploaded QR vs Request Pending vs Not Uploaded) */
-                    <div className="pay-qr-display-section">
-                        {activeFriend?.qrCode ? (
-                            /* Friend Has Uploaded Their QR Code */
-                            <div className="friend-official-qr-card">
-                                <div className="qr-badge-header">
-                                    <span className="qr-status-pill green">
-                                        ✓ {activeFriend.qrPlatform ? `${activeFriend.qrPlatform} QR` : "Payment QR"}
-                                    </span>
-                                    <label className="btn-reupload-qr-label" htmlFor="pay-qr-file-reupload">
-                                        <span>Change QR</span>
-                                        <input
-                                            id="pay-qr-file-reupload"
-                                            type="file"
-                                            accept="image/*"
-                                            className="file-hidden-input"
-                                            onChange={handleFileSelected}
-                                        />
-                                    </label>
+                    <>
+                        {/* Modal Header */}
+                        <div className="pay-modal-header">
+                            <div className="pay-header-left">
+                                <div className="pay-header-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                                    </svg>
                                 </div>
-
-                                <div className="friend-qr-frame">
-                                    <img src={activeFriend.qrCode} alt="Payment QR" className="friend-qr-image" />
-                                </div>
-
-                                <div className="qr-scan-instruction">
-                                    <strong>Scan with PhonePe, Google Pay, or Paytm camera</strong>
-                                    <p>Amount to send: <strong>₹{Number(amount) > 0 ? Number(amount).toLocaleString("en-IN") : "0"}</strong></p>
+                                <div>
+                                    <h3>Pay Friend</h3>
+                                    <p className="pay-header-sub">Scan QR Code & Pay via App</p>
                                 </div>
                             </div>
-                        ) : activeFriend?.qrRequestStatus === "pending" ? (
-                            /* QR Request is Pending from WhatsApp */
-                            <div className="qr-status-card pending-card">
-                                <div className="qr-status-icon-wrap">⏳</div>
-                                <h4>QR Code Request Pending</h4>
-                                <p>
-                                    You sent a request to <strong>{activeFriend.name}</strong> on WhatsApp. Waiting for them to upload their QR screenshot.
-                                </p>
+                            <button type="button" className="btn-close-pay-modal" onClick={onClose} aria-label="Close">
+                                ✕
+                            </button>
+                        </div>
 
-                                <div className="qr-pending-actions">
+                        {/* Recipient Context Card */}
+                        {activeFriend && (
+                            <div className={`recipient-summary-box ${isOwed ? "status-owed" : isDue ? "status-due" : "status-settled"}`}>
+                                <div className="recipient-avatar">
+                                    {activeFriend.name ? activeFriend.name.charAt(0).toUpperCase() : "F"}
+                                </div>
+                                <div className="recipient-meta">
+                                    <h4 className="recipient-name">{activeFriend.name}</h4>
+                                    <div className="recipient-phone-row">
+                                        <span>📱 +91 {activeFriend.mobile}</span>
+                                        <button
+                                            type="button"
+                                            className="btn-copy-tag"
+                                            onClick={() => copyToClipboard(activeFriend.mobile, "Number")}
+                                        >
+                                            {copied === "Number" ? "✓ Copied" : "Copy"}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="recipient-balance-status">
+                                    <span className="status-caption">
+                                        {isOwed ? "You Owe" : isDue ? "Owes You" : "Balance"}
+                                    </span>
+                                    <span className="status-val">
+                                        ₹{Math.abs(activeFriend.currentAmount).toLocaleString("en-IN")}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Amount & Presets */}
+                        <div className="pay-form-section">
+                            <label className="pay-form-label">Amount (₹) *</label>
+                            <div className="pay-amount-input-box">
+                                <span className="pay-currency-symbol">₹</span>
+                                <input
+                                    type="number"
+                                    className="pay-amount-input"
+                                    placeholder="0"
+                                    value={amount}
+                                    min="1"
+                                    required
+                                    autoFocus
+                                    onChange={(e) => setAmount(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="pay-quick-presets">
+                                <button type="button" onClick={() => setAmount("50")}>+₹50</button>
+                                <button type="button" onClick={() => setAmount("100")}>+₹100</button>
+                                <button type="button" onClick={() => setAmount("200")}>+₹200</button>
+                                <button type="button" onClick={() => setAmount("500")}>+₹500</button>
+                                {isOwed && (
                                     <button
                                         type="button"
-                                        className="btn-whatsapp-action"
-                                        onClick={handleSendWhatsAppQrRequest}
+                                        className="btn-preset-full-due"
+                                        onClick={() => setAmount(String(Math.abs(activeFriend.currentAmount)))}
                                     >
-                                        📲 Re-send WhatsApp Link
+                                        Clear Due (₹{Math.abs(activeFriend.currentAmount)})
                                     </button>
+                                )}
+                            </div>
+                        </div>
 
-                                    <label className="btn-upload-myself-action" htmlFor="pay-qr-upload-myself">
-                                        <span>📸 Upload QR Screenshot Myself</span>
-                                        <input
-                                            id="pay-qr-upload-myself"
-                                            type="file"
-                                            accept="image/*"
-                                            className="file-hidden-input"
-                                            onChange={handleFileSelected}
-                                        />
-                                    </label>
+                        {/* Note / Reason */}
+                        <div className="pay-form-section">
+                            <label className="pay-form-label">Note / Reason (Optional)</label>
+                            <input
+                                type="text"
+                                className="pay-description-input"
+                                placeholder="e.g. Dinner share, Chai, Movie, Flat rent"
+                                value={description}
+                                maxLength={100}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </div>
+
+                        {/* QR Upload Modal Sub-flow inside Pay Card */}
+                        {showUploadPicker ? (
+                            <div className="pay-qr-picker-subcard">
+                                <h4>Select Platform for Uploaded QR:</h4>
+                                <div className="picker-image-thumb-wrap">
+                                    <img src={pickerImage} alt="Preview" className="picker-thumb-img" />
+                                </div>
+
+                                <div className="qr-platform-chips-grid">
+                                    {QR_PLATFORMS.map((platform) => (
+                                        <button
+                                            key={platform.id}
+                                            type="button"
+                                            className={`qr-platform-chip-btn ${pickerPlatform === platform.id ? "active" : ""}`}
+                                            onClick={() => setPickerPlatform(platform.id)}
+                                        >
+                                            <span className="platform-icon">{platform.icon}</span>
+                                            <span className="platform-name">{platform.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="picker-actions-row">
+                                    <button
+                                        type="button"
+                                        className="btn-save-picker-qr"
+                                        disabled={uploadingQr}
+                                        onClick={handleSavePickedQr}
+                                    >
+                                        {uploadingQr ? "Saving..." : "✓ Save QR Code"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn-cancel-picker-qr"
+                                        onClick={() => {
+                                            setShowUploadPicker(false);
+                                            setPickerImage("");
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
                         ) : (
-                            /* No QR Code Uploaded Yet */
-                            <div className="qr-status-card not-uploaded-card">
-                                <div className="qr-status-icon-wrap">📸</div>
-                                <h4>No Payment QR Attached Yet</h4>
-                                <p>
-                                    Send a 1-tap WhatsApp request to <strong>{activeFriend?.name}</strong> so they can upload their PhonePe/GPay QR, or upload their screenshot yourself!
-                                </p>
+                            /* QR CODE SECTION */
+                            <div className="pay-qr-display-section">
+                                {activeFriend?.qrCode ? (
+                                    /* Friend Has Uploaded Their QR Code */
+                                    <div className="friend-official-qr-card">
+                                        <div className="qr-badge-header">
+                                            <span className="qr-status-pill green">
+                                                ✓ {activeFriend.qrPlatform ? `${activeFriend.qrPlatform} QR` : "Payment QR"}
+                                            </span>
+                                            <label className="btn-reupload-qr-label" htmlFor="pay-qr-file-reupload">
+                                                <span>Change QR</span>
+                                                <input
+                                                    id="pay-qr-file-reupload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="file-hidden-input"
+                                                    onChange={handleFileSelected}
+                                                />
+                                            </label>
+                                        </div>
 
-                                <div className="qr-pending-actions">
-                                    <button
-                                        type="button"
-                                        className="btn-whatsapp-action"
-                                        onClick={handleSendWhatsAppQrRequest}
-                                    >
-                                        📲 Send Request to Friend for QR Code
-                                    </button>
+                                        <div className="friend-qr-frame">
+                                            <img src={activeFriend.qrCode} alt="Payment QR" className="friend-qr-image" />
+                                        </div>
 
-                                    <label className="btn-upload-myself-action" htmlFor="pay-qr-upload-initial">
-                                        <span>📸 Upload QR Screenshot Myself</span>
-                                        <input
-                                            id="pay-qr-upload-initial"
-                                            type="file"
-                                            accept="image/*"
-                                            className="file-hidden-input"
-                                            onChange={handleFileSelected}
-                                        />
-                                    </label>
-                                </div>
+                                        <div className="qr-scan-instruction">
+                                            <strong>Scan with {activeFriend.qrPlatform || "PhonePe, Google Pay, or Paytm"} camera</strong>
+                                            <p>Amount to send: <strong>₹{Number(amount) > 0 ? Number(amount).toLocaleString("en-IN") : "0"}</strong></p>
+                                        </div>
+                                    </div>
+                                ) : activeFriend?.qrRequestStatus === "pending" ? (
+                                    /* QR Request is Pending from WhatsApp */
+                                    <div className="qr-status-card pending-card">
+                                        <div className="qr-status-icon-wrap">⏳</div>
+                                        <h4>QR Code Request Pending</h4>
+                                        <p>
+                                            You sent a request to <strong>{activeFriend.name}</strong> on WhatsApp. Waiting for them to upload their QR screenshot.
+                                        </p>
+
+                                        <div className="qr-pending-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-whatsapp-action"
+                                                onClick={handleSendWhatsAppQrRequest}
+                                            >
+                                                📲 Re-send WhatsApp Link
+                                            </button>
+
+                                            <label className="btn-upload-myself-action" htmlFor="pay-qr-upload-myself">
+                                                <span>📸 Upload QR Screenshot Myself</span>
+                                                <input
+                                                    id="pay-qr-upload-myself"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="file-hidden-input"
+                                                    onChange={handleFileSelected}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* No QR Code Uploaded Yet */
+                                    <div className="qr-status-card not-uploaded-card">
+                                        <div className="qr-status-icon-wrap">📸</div>
+                                        <h4>No Payment QR Attached Yet</h4>
+                                        <p>
+                                            Send a 1-tap WhatsApp request to <strong>{activeFriend?.name}</strong> so they can upload their PhonePe/GPay QR, or upload their screenshot yourself!
+                                        </p>
+
+                                        <div className="qr-pending-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-whatsapp-action"
+                                                onClick={handleSendWhatsAppQrRequest}
+                                            >
+                                                📲 Send Request to Friend for QR Code
+                                            </button>
+
+                                            <label className="btn-upload-myself-action" htmlFor="pay-qr-upload-initial">
+                                                <span>📸 Upload QR Screenshot Myself</span>
+                                                <input
+                                                    id="pay-qr-upload-initial"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="file-hidden-input"
+                                                    onChange={handleFileSelected}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
+
+                        {error && <p className="form-error pay-error-banner">{error}</p>}
+
+                        {/* Footer Action Buttons: Pay Button & Cancel */}
+                        <div className="pay-modal-footer">
+                            <button
+                                type="button"
+                                className="btn-pay-submit"
+                                disabled={launching || !Number(amount)}
+                                onClick={handleScanAndPay}
+                            >
+                                {launching ? (
+                                    "Scanning QR & Opening App..."
+                                ) : (
+                                    `🚀 Pay ₹${Number(amount) > 0 ? Number(amount).toLocaleString("en-IN") : ""} via ${activeFriend?.qrPlatform || "App"} ↗`
+                                )}
+                            </button>
+
+                            <button type="button" className="btn-pay-cancel" onClick={onClose}>
+                                Cancel
+                            </button>
+                        </div>
+                    </>
                 )}
-
-                {error && <p className="form-error pay-error-banner">{error}</p>}
-
-                {/* Footer Action Buttons */}
-                <div className="pay-modal-footer">
-                    <button
-                        type="button"
-                        className="btn-pay-submit"
-                        disabled={recording || !Number(amount)}
-                        onClick={handleManualMarkPaid}
-                    >
-                        {recording ? "Updating Ledger..." : "✓ Mark as Paid & Update Ledger"}
-                    </button>
-
-                    <button type="button" className="btn-pay-cancel" onClick={onClose}>
-                        Cancel
-                    </button>
-                </div>
             </div>
         </div>
     );
