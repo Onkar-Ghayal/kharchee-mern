@@ -131,40 +131,6 @@ export default function NotificationCenter({
                 }
             });
 
-            // ----------------------------------------------------
-            // 4. MONTHLY ACHIEVEMENT
-            // ----------------------------------------------------
-            if (friends.length > 0) {
-                const monthlyId = `monthly_achievement_${currentYear}_${new Date().getMonth()}`;
-                if (!dismissedIds.includes(monthlyId)) {
-                    list.push({
-                        id: monthlyId,
-                        type: "milestone_month",
-                        createdAt: now,
-                        title: `🏆 ${currentMonth} Achievement`,
-                        message: `You've actively managed ledgers across ${friends.length} friends with seamless expense tracking this month.`,
-                        time: "Monthly"
-                    });
-                }
-            }
-
-            // ----------------------------------------------------
-            // 5. YEARLY ACHIEVEMENT
-            // ----------------------------------------------------
-            if (friends.length > 0) {
-                const yearlyId = `yearly_achievement_${currentYear}`;
-                if (!dismissedIds.includes(yearlyId)) {
-                    list.push({
-                        id: yearlyId,
-                        type: "milestone_year",
-                        createdAt: now - 1000,
-                        title: `🎉 ${currentYear} Annual Network Milestone`,
-                        message: `You have built a trusted ledger network with ${friends.length} friends on Kharchee!`,
-                        time: "Yearly"
-                    });
-                }
-            }
-
             // Sort latest first
             list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         } catch (err) {
@@ -292,13 +258,6 @@ export default function NotificationCenter({
                                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                                                             <line x1="1" y1="10" x2="23" y2="10"></line>
-                                                        </svg>
-                                                    </div>
-                                                )}
-                                                {(n.type === "milestone_month" || n.type === "milestone_year") && (
-                                                    <div className="notif-type-icon amber">
-                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                                         </svg>
                                                     </div>
                                                 )}
