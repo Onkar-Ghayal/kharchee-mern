@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { exportToPDF, exportToCSV } from "../../utils/statementExport";
 
 export default function HistoryModal({
@@ -10,12 +10,21 @@ export default function HistoryModal({
     onDeleteTransaction,
     onAddExpense
 }) {
+    // 1. All hooks unconditionally declared at the top level
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("all"); // "all" | "thisMonth" | "7days" | "gain" | "loss"
     const [deletingId, setDeletingId] = useState(null);
     const [confirmTxn, setConfirmTxn] = useState(null);
 
-    if (!open) return null;
+    // Reset local filters when modal closes/re-opens
+    useEffect(() => {
+        if (open) {
+            setSearchQuery("");
+            setActiveFilter("all");
+            setDeletingId(null);
+            setConfirmTxn(null);
+        }
+    }, [open]);
 
     const history = Array.isArray(friend?.history) ? friend.history : [];
     const isEmpty = history.length === 0;
@@ -46,9 +55,9 @@ export default function HistoryModal({
         }
     };
 
-    // Filtered transaction list
+    // Filtered transaction list (Hook called unconditionally)
     const filteredHistory = useMemo(() => {
-        if (isEmpty) return [];
+        if (!open || isEmpty) return [];
 
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -92,7 +101,10 @@ export default function HistoryModal({
 
             return true;
         });
-    }, [history, activeFilter, searchQuery, isEmpty]);
+    }, [open, history, activeFilter, searchQuery, isEmpty]);
+
+    // 2. Conditional return placed strictly AFTER all hooks
+    if (!open) return null;
 
     const isFilterActive = searchQuery.trim() !== "" || activeFilter !== "all";
 
