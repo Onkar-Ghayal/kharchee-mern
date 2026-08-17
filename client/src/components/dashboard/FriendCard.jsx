@@ -5,7 +5,7 @@ export default function FriendCard({
     onSettle,
     onCalculate,
     onEdit,
-    onReceipt,
+    onPDFStatement,
     onHistory,
     onDelete
 }) {
@@ -13,64 +13,62 @@ export default function FriendCard({
     const isZero = friend.currentAmount === 0;
 
     const initial = friend.name ? friend.name.charAt(0).toUpperCase() : "F";
+    const currentAmount = Math.abs(friend.currentAmount || 0);
 
     return (
-        <div className={`friend-card ${isLoss ? "loss" : isZero ? "settled" : "gain"}`}>
-            <div className="friend-card-header">
-                <div className="friend-info-left">
-                    <div className="friend-avatar-badge">{initial}</div>
-                    <div className="friend-details-group">
-                        <h3 className="friend-name-title">{friend.name}</h3>
-                    </div>
+        <div className={`friend-card ${isLoss ? "loss-card" : isZero ? "settled-card" : "gain-card"}`}>
+            <div className="friend-card-top">
+                <div className="friend-avatar">{initial}</div>
+                <div className="friend-info">
+                    <h3 className="friend-name">{friend.name}</h3>
+                    {friend.mobile ? (
+                        <p className="friend-mobile">📱 {friend.mobile}</p>
+                    ) : (
+                        <p className="friend-mobile friend-mobile-empty">No mobile</p>
+                    )}
                 </div>
-
-                <div className="friend-balance-badge">
-                    <span className="balance-label">
+                <div className="friend-amount-block">
+                    <span className="amount-label">
                         {isLoss ? "You Owe" : isZero ? "Settled" : "You Will Get"}
                     </span>
-                    <span className="balance-amount-text">
-                        {isLoss ? "-" : isZero ? "" : "+"}₹{Math.abs(friend.currentAmount).toLocaleString("en-IN")}
+                    <span className={`amount-value ${isLoss ? "amount-loss" : isZero ? "amount-settled" : "amount-gain"}`}>
+                        {isLoss ? "-" : isZero ? "" : "+"}₹{currentAmount.toLocaleString("en-IN")}
                     </span>
                 </div>
             </div>
 
-            <div className="card-actions-toolbar">
-                <div className="card-primary-actions-row">
+            <div className="friend-card-actions">
+                <div className="primary-actions">
                     <button
-                        className="action-btn primary-add"
+                        className="btn-card-action btn-add-amount"
                         onClick={() => onAddAmount(friend)}
-                        title="Add or update amount"
                     >
                         + Add
                     </button>
-
                     {!isLoss && !isZero && (
                         <button
-                            className="action-btn remind-btn"
+                            className="btn-card-action btn-remind"
                             onClick={() => onRemind(friend)}
-                            title="Send WhatsApp payment reminder"
                         >
                             Remind
                         </button>
                     )}
-
                     {!isZero && (
                         <button
-                            className="action-btn settle-up"
+                            className="btn-card-action btn-settle"
                             onClick={() => onSettle(friend)}
-                            title="Mark balance as settled"
                         >
                             Settle
                         </button>
                     )}
                 </div>
 
-                <div className="action-icons-group">
+                <div className="icon-actions">
                     {/* Calculator SVG */}
                     <button
                         className="action-btn-icon"
                         onClick={() => onCalculate(friend)}
-                        title="Calculator"
+                        title="Smart Calculator"
                         aria-label="Calculator"
                     >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -100,18 +98,19 @@ export default function FriendCard({
                         </svg>
                     </button>
 
-                    {/* Visual Receipt Slip SVG */}
+                    {/* Official PDF Statement SVG */}
                     <button
                         className="action-btn-icon"
-                        onClick={() => onReceipt && onReceipt(friend)}
-                        title="Visual Receipt Slip"
-                        aria-label="Receipt Slip"
+                        onClick={() => onPDFStatement && onPDFStatement(friend)}
+                        title="PDF Statement & WhatsApp"
+                        aria-label="PDF Statement"
                     >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path>
-                            <line x1="8" y1="7" x2="16" y2="7"></line>
-                            <line x1="8" y1="11" x2="16" y2="11"></line>
-                            <line x1="8" y1="15" x2="13" y2="15"></line>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
                     </button>
 

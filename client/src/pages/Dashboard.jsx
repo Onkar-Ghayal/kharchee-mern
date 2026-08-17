@@ -14,7 +14,7 @@ import SettleModal from "../components/dashboard/SettleModal";
 import WhatsAppReminderModal from "../components/dashboard/WhatsAppReminderModal";
 import OnboardingTourModal from "../components/dashboard/OnboardingTourModal";
 import SplitBillModal from "../components/dashboard/SplitBillModal";
-import ReceiptCardModal from "../components/dashboard/ReceiptCardModal";
+import PDFStatementModal from "../components/dashboard/PDFStatementModal";
 
 import "../styles/dashboard.css";
 import "../styles/auth.css";
@@ -72,7 +72,7 @@ export default function Dashboard() {
     const [reminderOpen, setReminderOpen] = useState(false);
     const [tourOpen, setTourOpen] = useState(false);
     const [splitBillOpen, setSplitBillOpen] = useState(false);
-    const [receiptCardOpen, setReceiptCardOpen] = useState(false);
+    const [pdfModalOpen, setPdfModalOpen] = useState(false);
     const [filterMenuOpen, setFilterMenuOpen] = useState(false);
     const filterMenuRef = useRef(null);
 
@@ -293,10 +293,10 @@ export default function Dashboard() {
         setReminderOpen(true);
     };
 
-    /* ================= VISUAL RECEIPT SLIP ================= */
-    const openReceiptCardModal = (friend) => {
+    /* ================= OFFICIAL PDF STATEMENT ================= */
+    const openPDFModal = (friend) => {
         setActiveFriend(friend);
-        setReceiptCardOpen(true);
+        setPdfModalOpen(true);
     };
 
     /* ================= DELETE ================= */
@@ -535,7 +535,7 @@ export default function Dashboard() {
                             onSettle={openSettle}
                             onCalculate={openCalculator}
                             onEdit={openEditModal}
-                            onReceipt={openReceiptCardModal}
+                            onPDFStatement={openPDFModal}
                             onHistory={openHistory}
                             onDelete={openDelete}
                         />
@@ -594,7 +594,7 @@ export default function Dashboard() {
                 friend={activeFriend}
                 userName={user?.name || "Friend"}
                 onClose={() => setReminderOpen(false)}
-                onOpenReceiptCard={openReceiptCardModal}
+                onOpenPDFStatement={openPDFModal}
             />
 
             {/* 9. First-Time Guided Onboarding Tour Modal */}
@@ -627,12 +627,12 @@ export default function Dashboard() {
                 onSubmit={handleSplitBillSubmit}
             />
 
-            {/* 13. Visual Receipt Slip Modal */}
-            <ReceiptCardModal
-                open={receiptCardOpen}
+            {/* 13. Official Executive PDF Statement Modal */}
+            <PDFStatementModal
+                open={pdfModalOpen}
                 friend={allFriends.find((f) => f._id === activeFriend?._id) || activeFriend}
                 userName={user?.name || "User"}
-                onClose={() => setReceiptCardOpen(false)}
+                onClose={() => setPdfModalOpen(false)}
             />
         </>
     );

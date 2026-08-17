@@ -26,7 +26,7 @@ export default function WhatsAppReminderModal({
     friend,
     userName = "Friend",
     onClose,
-    onOpenReceiptCard
+    onOpenPDFStatement
 }) {
     const [selectedTemplate, setSelectedTemplate] = useState("friendly");
     const [customMessage, setCustomMessage] = useState("");
@@ -142,18 +142,18 @@ export default function WhatsAppReminderModal({
                     </div>
                 </div>
 
-                {/* Visual Receipt Card Shortcut */}
-                {onOpenReceiptCard && (
+                {/* Official PDF Statement Shortcut */}
+                {onOpenPDFStatement && (
                     <div style={{ marginBottom: "1rem" }}>
                         <button
                             type="button"
-                            className="btn-open-receipt-card"
+                            className="btn-open-pdf-statement"
                             onClick={() => {
                                 onClose();
-                                onOpenReceiptCard(friend);
+                                onOpenPDFStatement(friend);
                             }}
                         >
-                            <span>🖼️ Generate & Share Visual Receipt Slip</span>
+                            <span>📄 Send Official PDF Statement on WhatsApp</span>
                         </button>
                     </div>
                 )}

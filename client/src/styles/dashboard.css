@@ -5269,9 +5269,9 @@
 }
 
 /* =====================================================
-   VISUAL RECEIPT SLIP MODAL & BUTTONS
+   OFFICIAL PDF STATEMENT MODAL & WHATSAPP SENDER
 ===================================================== */
-.btn-open-receipt-card {
+.btn-open-pdf-statement {
     width: 100%;
     padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
@@ -5288,13 +5288,13 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dark-mode .btn-open-receipt-card {
+.dark-mode .btn-open-pdf-statement {
     color: #a5b4fc;
     border-color: rgba(99, 102, 241, 0.4);
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.18) 100%);
 }
 
-.btn-open-receipt-card:hover {
+.btn-open-pdf-statement:hover {
     transform: translateY(-1.5px);
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: #ffffff;
@@ -5302,199 +5302,263 @@
     box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
 }
 
-.receipt-modal-content {
-    max-width: 440px;
+.pdf-modal-content {
+    max-width: 470px;
     width: 100%;
     box-sizing: border-box;
-    padding: 1.15rem 1.25rem 1.25rem 1.25rem;
-    max-height: 94vh;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
+    padding: 1.35rem 1.4rem;
+    border-radius: 20px;
 }
 
-.receipt-subtitle {
+.pdf-modal-subtitle {
     font-size: 0.8rem;
     color: var(--text-tertiary, #94a3b8);
     margin: 0;
 }
 
-/* Theme Selector Toolbar */
-.receipt-theme-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.4rem 0.65rem;
+/* Executive Document Summary Card */
+.pdf-doc-summary-card {
     background: var(--bg-secondary, #f8fafc);
     border: 1.5px solid var(--border-light, #e2e8f0);
-    border-radius: 10px;
-    margin: 0.65rem 0 0.75rem 0;
-    gap: 0.5rem;
+    border-radius: 16px;
+    padding: 1.15rem;
+    margin: 1.15rem 0 1.25rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.dark-mode .receipt-theme-toolbar {
+.dark-mode .pdf-doc-summary-card {
     background: #0f172a;
     border-color: #334155;
 }
 
-.theme-toggle-label {
-    font-size: 0.775rem;
-    font-weight: 700;
-    color: var(--text-secondary, #64748b);
-}
-
-.receipt-theme-pills {
+.pdf-doc-top-bar {
     display: flex;
-    gap: 0.35rem;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-.theme-pill-btn {
-    padding: 0.28rem 0.6rem;
-    background: transparent;
-    border: 1px solid var(--border-light, #e2e8f0);
-    border-radius: 8px;
-    font-size: 0.725rem;
-    font-weight: 700;
+.pdf-doc-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.pdf-doc-meta {
+    overflow: hidden;
+}
+
+.pdf-doc-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    margin: 0 0 0.2rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dark-mode .pdf-doc-title {
+    color: #f8fafc;
+}
+
+.pdf-doc-pages {
+    font-size: 0.75rem;
     color: var(--text-secondary, #64748b);
-    cursor: pointer;
-    transition: all 0.15s ease;
 }
 
-.dark-mode .theme-pill-btn {
-    border-color: #334155;
+.dark-mode .pdf-doc-pages {
     color: #94a3b8;
 }
 
-.theme-pill-btn.active {
-    background: var(--accent-primary, #6366f1);
-    color: #ffffff;
-    border-color: var(--accent-primary, #6366f1);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-}
-
-/* Live Canvas Preview Stage */
-.receipt-canvas-stage {
+/* Balance Spotlight Box */
+.pdf-balance-spotlight {
+    background: var(--bg-card, #ffffff);
+    border: 1.5px solid var(--border-light, #e2e8f0);
+    border-radius: 12px;
+    padding: 1rem;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    background: radial-gradient(circle at center, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-    padding: 0.25rem 0;
-    margin-bottom: 0.85rem;
-    border-radius: 14px;
+    text-align: center;
+    gap: 0.35rem;
 }
 
-.receipt-preview-canvas {
-    width: 100%;
-    max-width: 320px;
-    height: auto;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08);
-    display: block;
-    transition: transform 0.2s ease;
+.dark-mode .pdf-balance-spotlight {
+    background: #1e293b;
+    border-color: #334155;
 }
 
-.receipt-preview-canvas:hover {
-    transform: scale(1.015);
+.pdf-spotlight-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-/* Action Toolbar */
-.receipt-actions-toolbar {
+.pdf-spotlight-amount {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.pdf-spotlight-amount.gain {
+    color: #10b981;
+}
+
+.pdf-spotlight-amount.loss {
+    color: #ef4444;
+}
+
+.pdf-spotlight-amount.settled {
+    color: var(--text-secondary, #64748b);
+}
+
+.pdf-status-chip {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-top: 0.25rem;
+}
+
+.pdf-status-chip.gain {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.pdf-status-chip.loss {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.pdf-status-chip.settled {
+    background: rgba(148, 163, 184, 0.15);
+    color: #64748b;
+}
+
+/* Breakdown Row */
+.pdf-breakdown-row {
     display: flex;
-    gap: 0.45rem;
-    width: 100%;
-    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border-light, #e2e8f0);
 }
 
-.btn-receipt-action {
-    flex: 1;
-    height: 40px;
-    padding: 0 0.7rem;
-    border-radius: 10px;
-    font-size: 0.8rem;
+.dark-mode .pdf-breakdown-row {
+    border-color: #334155;
+}
+
+.pdf-stat-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.pdf-stat-col .stat-label {
+    font-size: 0.675rem;
+    font-weight: 700;
+    color: var(--text-tertiary, #94a3b8);
+    text-transform: uppercase;
+}
+
+.pdf-stat-col .stat-value {
+    font-size: 0.825rem;
+    font-weight: 800;
+}
+
+/* Actions Container */
+.pdf-modal-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+}
+
+.btn-send-pdf-whatsapp {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.925rem;
     font-weight: 800;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.55rem;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    border: none;
 }
 
-.btn-receipt-action.download {
+.btn-send-pdf-whatsapp:hover:not(:disabled) {
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.pdf-secondary-actions-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-pdf-secondary {
+    flex: 1;
+    height: 40px;
     background: var(--bg-secondary, #f8fafc);
     border: 1.5px solid var(--border-light, #e2e8f0);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 800;
     color: var(--text-primary, #0f172a);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all 0.15s ease;
 }
 
-.dark-mode .btn-receipt-action.download {
+.dark-mode .btn-pdf-secondary {
     background: #1e293b;
     border-color: #334155;
     color: #f8fafc;
 }
 
-.btn-receipt-action.download:hover:not(:disabled) {
+.btn-pdf-secondary:hover:not(:disabled) {
     border-color: var(--accent-primary, #6366f1);
     color: var(--accent-primary, #6366f1);
-    transform: translateY(-1.5px);
-}
-
-.btn-receipt-action.copy {
-    background: rgba(99, 102, 241, 0.1);
-    border: 1.5px solid rgba(99, 102, 241, 0.25);
-    color: var(--accent-primary, #6366f1);
-}
-
-.btn-receipt-action.copy:hover {
-    background: var(--accent-primary, #6366f1);
-    color: #ffffff;
-    transform: translateY(-1.5px);
-}
-
-.btn-receipt-action.copy.copied {
-    background: #10b981;
-    color: #ffffff;
-    border-color: #10b981;
-}
-
-.btn-receipt-action.whatsapp {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
-}
-
-.btn-receipt-action.whatsapp:hover {
-    transform: translateY(-1.5px);
-    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.5);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 600px) {
-    .receipt-modal-content {
-        padding: 1rem 0.85rem !important;
+    .pdf-modal-content {
+        padding: 1.15rem 1rem !important;
         width: 95% !important;
         max-width: 95% !important;
-        max-height: 94vh !important;
     }
 
-    .receipt-theme-toolbar {
-        flex-direction: row;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.4rem 0.65rem;
+    .btn-send-pdf-whatsapp {
+        height: 44px;
+        font-size: 0.875rem;
     }
 
-    .receipt-preview-canvas {
-        max-width: 270px;
-    }
-
-    .receipt-actions-toolbar {
+    .pdf-secondary-actions-row {
         flex-direction: column;
         gap: 0.4rem;
-    }
-
-    .btn-receipt-action {
-        height: 38px;
-        font-size: 0.775rem;
     }
 }
