@@ -1847,8 +1847,33 @@
     border-radius: 8px;
 }
 
+.qr-quick-tools-row {
+    margin-top: 0.65rem;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-download-qr-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-download-qr-action:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
 .qr-scan-instruction {
-    margin-top: 0.75rem;
+    margin-top: 0.65rem;
     font-size: 0.775rem;
     color: var(--text-secondary);
 }
@@ -1857,6 +1882,30 @@
     color: var(--text-primary);
     display: block;
     margin-bottom: 0.15rem;
+}
+
+.qr-scan-instruction p {
+    margin: 0;
+}
+
+.pay-security-tip-banner {
+    margin-top: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    border-radius: 10px;
+    font-size: 0.725rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    text-align: left;
+}
+
+.pay-security-tip-banner p {
+    margin: 0;
+}
+
+.pay-security-tip-banner strong {
+    color: var(--text-primary);
 }
 
 .qr-scan-instruction p {

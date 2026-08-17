@@ -541,9 +541,35 @@ export default function PaymentModal({
                                             <img src={activeFriend.qrCode} alt="Payment QR" className="friend-qr-image" />
                                         </div>
 
+                                        <div className="qr-quick-tools-row">
+                                            <button
+                                                type="button"
+                                                className="btn-download-qr-action"
+                                                onClick={() => {
+                                                    if (!activeFriend?.qrCode) return;
+                                                    const link = document.createElement("a");
+                                                    link.href = activeFriend.qrCode;
+                                                    link.download = `${(activeFriend.name || "friend").replace(/\s+/g, "_")}_Payment_QR.jpg`;
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                    setCopied("Downloaded QR");
+                                                    setTimeout(() => setCopied(""), 2500);
+                                                }}
+                                            >
+                                                📥 {copied === "Downloaded QR" ? "✓ Saved to Photos!" : "Save QR to Photos / Gallery"}
+                                            </button>
+                                        </div>
+
                                         <div className="qr-scan-instruction">
                                             <strong>Scan with {activeFriend.qrPlatform || "PhonePe, Google Pay, or Paytm"} camera</strong>
                                             <p>Amount to send: <strong>₹{Number(amount) > 0 ? Number(amount).toLocaleString("en-IN") : "0"}</strong></p>
+                                        </div>
+
+                                        <div className="pay-security-tip-banner">
+                                            <p>
+                                                💡 <strong>Tip:</strong> If PhonePe blocks browser links, tap <strong>Save QR</strong> & open in PhonePe scanner, or pay via mobile number.
+                                            </p>
                                         </div>
                                     </div>
                                 ) : activeFriend?.qrRequestStatus === "pending" ? (
