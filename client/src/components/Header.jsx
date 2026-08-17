@@ -17,7 +17,7 @@ export default function Header({
     friends = [],
     onRemind
 }) {
-    const { logout, user } = useAuth();
+    const { logout, user, isLoggedIn } = useAuth();
     const { isDark, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
