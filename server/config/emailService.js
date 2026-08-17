@@ -1,31 +1,22 @@
 const nodemailer = require("nodemailer");
 
 /**
- * Configure Nodemailer Transporter
- * Uses Gmail SMTP with Connection Pooling for sub-second email dispatch.
+ * Helper to build sanitized Gmail SMTP Transporter
+ * Automatically strips all spaces/dashes/quotes from EMAIL_PASS.
  */
-let transporter = null;
+function getTransporter() {
+    const emailUser = (process.env.EMAIL_USER || "").trim();
+    const emailPass = (process.env.EMAIL_PASS || "").replace(/[\s"-]/g, "").trim();
 
-if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true, // SSL
-        pool: true, // Keep socket alive for instant dispatch
-        maxConnections: 5,
-        maxMessages: 100,
+    if (!emailUser || !emailPass) {
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        service: "gmail",
         auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-
-    // Verify transporter on startup in background
-    transporter.verify((err) => {
-        if (err) {
-            console.error("⚠️ Gmail SMTP verification warning:", err.message);
-        } else {
-            console.log("✅ Gmail SMTP Ready & Warm for instant OTP delivery");
+            user: emailUser,
+            pass: emailPass
         }
     });
 }
@@ -140,10 +131,13 @@ https://kharchee.vercel.app
     console.log(`👉 OTP Code: ${otp}`);
     console.log(`=================================================\n`);
 
-    if (transporter) {
+    const transporter = getTransporter();
+    const emailUser = (process.env.EMAIL_USER || "").trim();
+
+    if (transporter && emailUser) {
         try {
             await transporter.sendMail({
-                from: `"Kharchee" <${process.env.EMAIL_USER}>`,
+                from: `"Kharchee" <${emailUser}>`,
                 to: toEmail,
                 subject: subject,
                 text: text,
@@ -154,12 +148,16 @@ https://kharchee.vercel.app
                     Importance: "High"
                 }
             });
-            console.log(`✅ Email delivered to ${toEmail}`);
+            console.log(`✅ Email successfully delivered to: ${toEmail}`);
         } catch (err) {
-            console.error("❌ Email sending failed via SMTP:", err.message);
+            console.error("❌ Gmail SMTP delivery failed:", err.message);
+            if (err.message && err.message.includes("Username and Password not accepted")) {
+                console.error("👉 Solution: Make sure EMAIL_USER is your Gmail, and EMAIL_PASS is a 16-letter App Password generated from https://myaccount.google.com/apppasswords");
+            }
         }
     } else {
-        console.warn("⚠️ No EMAIL_USER and EMAIL_PASS set in environment. Check console for OTP code above.");
+        console.warn("⚠️ EMAIL_USER or EMAIL_PASS is not set in your environment variables.");
+        console.warn("👉 Add EMAIL_USER and EMAIL_PASS to Render or server/.env to send real emails.");
     }
 }
 
