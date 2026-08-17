@@ -1425,6 +1425,136 @@
     margin-bottom: 1rem;
 }
 
+/* -------------------- PAYMENT MODE TABS -------------------- */
+.payment-mode-tabs {
+    display: flex;
+    gap: 0.45rem;
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 1rem;
+}
+
+.dark-mode .payment-mode-tabs {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.pay-mode-tab-btn {
+    flex: 1;
+    height: 38px;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.pay-mode-tab-btn.active {
+    background: var(--bg-card);
+    color: var(--accent-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dark-mode .pay-mode-tab-btn.active {
+    background: #1e293b;
+    color: #818cf8;
+}
+
+/* -------------------- DYNAMIC QR CODE DISPLAY -------------------- */
+.dynamic-qr-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 0;
+    margin-bottom: 0.85rem;
+}
+
+.qr-code-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.15rem;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    border: 1.5px solid var(--border-light);
+    text-align: center;
+    max-width: 240px;
+}
+
+.dark-mode .qr-code-box {
+    border-color: #334155;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.qr-code-caption {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.qr-pay-amount {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.qr-pay-recipient {
+    font-size: 0.725rem;
+    font-weight: 600;
+    color: #64748b;
+    line-height: 1.35;
+}
+
+.qr-placeholder-box {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border: 1.5px dashed var(--border-light);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 0.825rem;
+    color: var(--text-tertiary);
+}
+
+/* Security Note Box */
+.upi-security-note-box {
+    display: flex;
+    gap: 0.65rem;
+    padding: 0.75rem 0.85rem;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 10px;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.security-note-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.security-note-text strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.security-note-text p {
+    margin: 0;
+}
+
 /* Footer Actions */
 .pay-modal-footer {
     display: flex;
