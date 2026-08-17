@@ -16,8 +16,26 @@ export default function HistoryModal({
 
     if (!open) return null;
 
-    const history = friend?.history || [];
+    const history = Array.isArray(friend?.history) ? friend.history : [];
     const isEmpty = history.length === 0;
+    const friendName = friend?.name || "Friend";
+
+    // Format safe date helper
+    const formatDate = (dateVal) => {
+        try {
+            const d = dateVal ? new Date(dateVal) : new Date();
+            if (isNaN(d.getTime())) return "Recent";
+            return d.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        } catch {
+            return "Recent";
+        }
+    };
 
     // Filtered transaction list
     const filteredHistory = useMemo(() => {
@@ -28,19 +46,22 @@ export default function HistoryModal({
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
         return history.filter((h) => {
-            const txnDate = new Date(h.date);
+            if (!h) return false;
+            const amount = Number(h.amount) || 0;
+            const d = h.date ? new Date(h.date) : new Date();
+            const validDate = !isNaN(d.getTime()) ? d : now;
 
             // 1. Date & Type Filter
-            if (activeFilter === "7days" && txnDate < sevenDaysAgo) {
+            if (activeFilter === "7days" && validDate < sevenDaysAgo) {
                 return false;
             }
-            if (activeFilter === "thisMonth" && txnDate < startOfMonth) {
+            if (activeFilter === "thisMonth" && validDate < startOfMonth) {
                 return false;
             }
-            if (activeFilter === "gain" && h.amount < 0) {
+            if (activeFilter === "gain" && amount < 0) {
                 return false;
             }
-            if (activeFilter === "loss" && h.amount >= 0) {
+            if (activeFilter === "loss" && amount >= 0) {
                 return false;
             }
 
@@ -48,12 +69,8 @@ export default function HistoryModal({
             if (searchQuery.trim()) {
                 const q = searchQuery.trim().toLowerCase();
                 const note = (h.description || "").toLowerCase();
-                const amountStr = Math.abs(h.amount).toString();
-                const dateStr = txnDate.toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric"
-                }).toLowerCase();
+                const amountStr = Math.abs(amount).toString();
+                const dateStr = formatDate(h.date).toLowerCase();
 
                 const matchesNote = note.includes(q);
                 const matchesAmount = amountStr.includes(q);
@@ -76,11 +93,15 @@ export default function HistoryModal({
     };
 
     const handleDeleteSingle = async (h, originalIndex) => {
-        const idToPass = h._id ? h._id.toString() : `idx_${originalIndex}`;
+        const idToPass = h?._id ? String(h._id) : `idx_${originalIndex}`;
         setDeletingId(idToPass);
         try {
-            await onDeleteTransaction(idToPass, originalIndex);
+            if (typeof onDeleteTransaction === "function") {
+                await onDeleteTransaction(idToPass, originalIndex);
+            }
             setConfirmTxn(null);
+        } catch (err) {
+            console.error("Error deleting single transaction:", err);
         } finally {
             setDeletingId(null);
         }
@@ -93,7 +114,7 @@ export default function HistoryModal({
                 <div className="modal-header-row">
                     <div>
                         <h3>Transaction History</h3>
-                        {friend?.name && <p className="history-friend-subtitle">With {friend.name}</p>}
+                        <p className="history-friend-subtitle">With {friendName}</p>
                     </div>
                     <button type="button" className="modal-close-x" onClick={onClose} aria-label="Close">
                         ✕
@@ -234,10 +255,10 @@ export default function HistoryModal({
                         <p className="warning-box-desc">
                             Are you sure you want to delete this transaction of{" "}
                             <strong>
-                                {confirmTxn.txn.amount < 0 ? "-" : "+"}₹
-                                {Math.abs(confirmTxn.txn.amount).toLocaleString("en-IN")}
+                                {(Number(confirmTxn.txn?.amount) || 0) < 0 ? "-" : "+"}₹
+                                {Math.abs(Number(confirmTxn.txn?.amount) || 0).toLocaleString("en-IN")}
                             </strong>
-                            {confirmTxn.txn.description ? ` (${confirmTxn.txn.description})` : ""}?
+                            {confirmTxn.txn?.description ? ` (${confirmTxn.txn.description})` : ""}?
                             This will automatically reverse the amount from your balance.
                         </p>
                         <div className="warning-box-actions">
@@ -282,17 +303,15 @@ export default function HistoryModal({
                 ) : (
                     <ul className="history-list">
                         {filteredHistory.map((h, i) => {
-                            const isLoss = h.amount < 0;
-                            const formattedDate = new Date(h.date).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            });
-                            const currentId = h._id ? h._id.toString() : `idx_${i}`;
+                            if (!h) return null;
+                            const amount = Number(h.amount) || 0;
+                            const isLoss = amount < 0;
+                            const formattedDate = formatDate(h.date);
+                            const currentId = h._id ? String(h._id) : `idx_${i}`;
                             const isDeleting = deletingId === currentId;
-                            const originalIndex = history.findIndex((item) => (item._id && h._id ? item._id === h._id : item === h));
+                            const originalIndex = history.findIndex((item) => (
+                                item?._id && h?._id ? String(item._id) === String(h._id) : item === h
+                            ));
 
                             return (
                                 <li key={currentId || i} className="history-item-row">
@@ -307,7 +326,7 @@ export default function HistoryModal({
 
                                     <div className="history-item-right">
                                         <span className={`history-amount-pill ${isLoss ? "loss" : "gain"}`}>
-                                            {isLoss ? "-" : "+"}₹{Math.abs(h.amount).toLocaleString("en-IN")}
+                                            {isLoss ? "-" : "+"}₹{Math.abs(amount).toLocaleString("en-IN")}
                                         </span>
 
                                         {/* Click to open Warning confirmation */}
