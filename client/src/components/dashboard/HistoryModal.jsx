@@ -1,8 +1,17 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { exportToPDF, exportToCSV } from "../../utils/statementExport";
 
-export default function HistoryModal({
-    open,
+/**
+ * Foolproof Modal Wrapper:
+ * When closed, returns null immediately without mounting children or running child hooks.
+ * When open, mounts HistoryModalContent cleanly with fresh state.
+ */
+export default function HistoryModal(props) {
+    if (!props.open) return null;
+    return <HistoryModalContent {...props} />;
+}
+
+function HistoryModalContent({
     friend,
     userName = "User",
     onClose,
@@ -10,21 +19,10 @@ export default function HistoryModal({
     onDeleteTransaction,
     onAddExpense
 }) {
-    // 1. All hooks unconditionally declared at the top level
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("all"); // "all" | "thisMonth" | "7days" | "gain" | "loss"
     const [deletingId, setDeletingId] = useState(null);
     const [confirmTxn, setConfirmTxn] = useState(null);
-
-    // Reset local filters when modal closes/re-opens
-    useEffect(() => {
-        if (open) {
-            setSearchQuery("");
-            setActiveFilter("all");
-            setDeletingId(null);
-            setConfirmTxn(null);
-        }
-    }, [open]);
 
     const history = Array.isArray(friend?.history) ? friend.history : [];
     const isEmpty = history.length === 0;
@@ -55,15 +53,14 @@ export default function HistoryModal({
         }
     };
 
-    // Filtered transaction list (Hook called unconditionally)
-    const filteredHistory = useMemo(() => {
-        if (!open || isEmpty) return [];
+    // Calculate filtered transactions directly (No useMemo needed for fast arrays)
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const now = new Date();
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        return history.filter((h) => {
+    const filteredHistory = isEmpty
+        ? []
+        : history.filter((h) => {
             if (!h) return false;
             const amount = Number(h.amount) || 0;
             const d = h.date ? new Date(h.date) : new Date();
@@ -101,10 +98,6 @@ export default function HistoryModal({
 
             return true;
         });
-    }, [open, history, activeFilter, searchQuery, isEmpty]);
-
-    // 2. Conditional return placed strictly AFTER all hooks
-    if (!open) return null;
 
     const isFilterActive = searchQuery.trim() !== "" || activeFilter !== "all";
 
