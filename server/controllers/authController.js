@@ -76,8 +76,10 @@ exports.registerUser = async (req, res) => {
             });
         }
 
-        // Send OTP via Email
-        await sendOtpEmail(normalizedEmail, otp, "verification");
+        // Send OTP via Email (Fast background dispatch so UI pops up immediately)
+        sendOtpEmail(normalizedEmail, otp, "verification").catch((err) => {
+            console.error("Email dispatch error:", err);
+        });
 
         res.status(200).json({
             message: "Verification code sent to your email.",
@@ -169,7 +171,9 @@ exports.resendOTP = async (req, res) => {
         user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
 
-        await sendOtpEmail(normalizedEmail, otp, type);
+        sendOtpEmail(normalizedEmail, otp, type).catch((err) => {
+            console.error("Resend email dispatch error:", err);
+        });
 
         res.json({ message: "A new verification code has been sent to your email" });
     } catch (error) {
@@ -214,7 +218,9 @@ exports.loginUser = async (req, res) => {
             user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
             await user.save();
 
-            await sendOtpEmail(normalizedEmail, otp, "verification");
+            sendOtpEmail(normalizedEmail, otp, "verification").catch((err) => {
+                console.error("Login verification email dispatch error:", err);
+            });
 
             return res.status(403).json({
                 message: "Account not verified. A verification code has been sent to your email.",
@@ -345,7 +351,9 @@ exports.forgotPassword = async (req, res) => {
         user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
 
-        await sendOtpEmail(normalizedEmail, otp, "reset");
+        sendOtpEmail(normalizedEmail, otp, "reset").catch((err) => {
+            console.error("Forgot password email dispatch error:", err);
+        });
 
         res.json({
             message: "Password reset code sent to your email",
