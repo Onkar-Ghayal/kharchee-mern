@@ -4579,6 +4579,84 @@
     }
 
     /* History Modal on Mobile */
+    .history-modal .modal-content,
+    .history-modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 1.15rem 0.95rem !important;
+        margin: auto !important;
+        max-height: 90vh !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .history-ledger-hero-card {
+        padding: 0.75rem 0.85rem;
+        gap: 0.55rem;
+        margin: 0.5rem 0 0.65rem 0;
+    }
+
+    .ledger-hero-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    .ledger-hero-name {
+        font-size: 0.9rem;
+    }
+
+    .ledger-hero-phone {
+        font-size: 0.7rem;
+    }
+
+    .ledger-bal-val {
+        font-size: 0.95rem;
+    }
+
+    .ledger-hero-stats-row {
+        padding-top: 0.5rem;
+    }
+
+    .stat-caption {
+        font-size: 0.625rem;
+    }
+
+    .stat-value {
+        font-size: 0.775rem;
+    }
+
+    .history-search-filter-section {
+        gap: 0.45rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .history-search-wrap input.history-search-input,
+    .modal-content input.history-search-input {
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 0 30px 0 36px !important;
+        font-size: 0.825rem !important;
+        border-radius: 10px !important;
+    }
+
+    .history-search-icon {
+        left: 10px;
+        width: 14px;
+        height: 14px;
+    }
+
+    .history-filter-pills-row {
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+
+    .history-pill-btn {
+        font-size: 0.72rem;
+        padding: 0.26rem 0.55rem;
+    }
+
     .history-export-toolbar {
         gap: 0.3rem;
         margin: 0.45rem 0;
@@ -4592,8 +4670,9 @@
     }
 
     .history-list {
-        max-height: 220px;
+        max-height: 200px;
         gap: 0.3rem;
+        margin: 0.4rem 0 0.85rem 0;
     }
 
     .history-item-row {
@@ -4610,6 +4689,34 @@
 
     .history-amount-pill {
         font-size: 0.825rem;
+    }
+
+    .empty-history-enhanced-box {
+        padding: 1.5rem 0.85rem;
+        margin: 0.5rem 0 0.85rem 0;
+    }
+
+    .empty-history-icon-bubble {
+        width: 42px;
+        height: 42px;
+        font-size: 1.25rem;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-history-enhanced-box h4 {
+        font-size: 0.95rem;
+    }
+
+    .empty-history-enhanced-box p {
+        font-size: 0.775rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .btn-add-first-expense {
+        height: 36px;
+        padding: 0 1rem;
+        font-size: 0.8rem;
     }
 
     /* Tour Modal on Mobile */
@@ -4665,11 +4772,21 @@
 /* =====================================================
    HISTORY SEARCH & DATE FILTERS
 ===================================================== */
+.history-modal .modal-content,
+.history-modal-content {
+    max-width: 500px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
 .history-search-filter-section {
-    margin-bottom: 1.15rem;
+    margin-bottom: 0.95rem;
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
+    gap: 0.55rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .history-search-wrap {
@@ -4677,97 +4794,114 @@
     display: flex;
     align-items: center;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .history-search-icon {
     position: absolute;
-    left: 0.85rem;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     color: var(--text-tertiary, #94a3b8);
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
 }
 
-.history-search-input {
-    width: 100%;
-    height: 42px;
-    padding: 0 2.25rem 0 2.45rem;
+.history-search-wrap input.history-search-input,
+.modal-content input.history-search-input {
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 32px 0 38px !important;
     background: var(--bg-secondary, #f8fafc);
     border: 1.5px solid var(--border-light, #e2e8f0);
-    border-radius: 12px;
-    font-size: 0.875rem;
+    border-radius: 12px !important;
+    font-size: 0.875rem !important;
     font-weight: 500;
     color: var(--text-primary, #0f172a);
     outline: none;
     transition: all 0.2s ease;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
 
-.dark-mode .history-search-input {
+.dark-mode .history-search-wrap input.history-search-input,
+.dark-mode .modal-content input.history-search-input {
     background: #0f172a;
     border-color: #334155;
     color: #f8fafc;
 }
 
-.history-search-input:focus {
+.history-search-wrap input.history-search-input:focus,
+.modal-content input.history-search-input:focus {
     border-color: var(--accent-primary, #6366f1);
     background: var(--bg-card, #ffffff);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-.dark-mode .history-search-input:focus {
+.dark-mode .history-search-wrap input.history-search-input:focus,
+.dark-mode .modal-content input.history-search-input:focus {
     background: #0f172a;
     border-color: #818cf8;
 }
 
 .history-search-input::placeholder {
     color: var(--text-tertiary, #94a3b8);
-    font-size: 0.85rem;
+    font-size: 0.825rem;
 }
 
 .history-search-clear-btn {
     position: absolute;
-    right: 0.65rem;
-    background: none;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(148, 163, 184, 0.2);
     border: none;
-    color: var(--text-tertiary, #94a3b8);
-    font-size: 0.85rem;
+    color: var(--text-secondary, #64748b);
+    font-size: 0.725rem;
     cursor: pointer;
-    padding: 0.25rem 0.4rem;
-    border-radius: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.15s;
+    transition: all 0.15s ease;
+    z-index: 2;
+    padding: 0;
 }
 
 .history-search-clear-btn:hover {
     color: var(--text-primary, #0f172a);
+    background: rgba(148, 163, 184, 0.35);
 }
 
 .history-filter-pills-row {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-}
-
-.history-filter-pills-row::-webkit-scrollbar {
-    display: none;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .history-pill-btn {
-    padding: 0.35rem 0.75rem;
+    padding: 0.32rem 0.65rem;
     background: var(--bg-secondary, #f8fafc);
     border: 1.5px solid var(--border-light, #e2e8f0);
     border-radius: 9999px;
-    font-size: 0.775rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-secondary, #64748b);
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .dark-mode .history-pill-btn {
@@ -4786,31 +4920,33 @@
     background: var(--accent-primary, #6366f1);
     color: #ffffff;
     border-color: var(--accent-primary, #6366f1);
-    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .history-pill-btn.gain-pill.active {
     background: #10b981;
     border-color: #10b981;
-    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .history-pill-btn.loss-pill.active {
     background: #ef4444;
     border-color: #ef4444;
-    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .history-filter-status-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.4rem 0.75rem;
+    padding: 0.35rem 0.7rem;
     background: rgba(99, 102, 241, 0.06);
     border: 1px solid rgba(99, 102, 241, 0.15);
     border-radius: 8px;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--text-secondary, #64748b);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dark-mode .history-filter-status-bar {
@@ -4832,7 +4968,7 @@
     border: none;
     color: var(--accent-primary, #6366f1);
     font-weight: 700;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     cursor: pointer;
     padding: 0;
     text-decoration: underline;
@@ -4844,12 +4980,14 @@
 
 /* Empty Search State */
 .empty-history-search-box {
-    padding: 2.25rem 1rem;
+    padding: 2rem 1rem;
     text-align: center;
     background: var(--bg-secondary, #f8fafc);
     border: 1.5px dashed var(--border-light, #e2e8f0);
     border-radius: 16px;
     margin: 0.5rem 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dark-mode .empty-history-search-box {
