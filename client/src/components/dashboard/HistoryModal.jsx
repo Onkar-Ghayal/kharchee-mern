@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { exportToPDF, exportToCSV } from "../../utils/statementExport";
 
 export default function HistoryModal({
@@ -9,6 +9,8 @@ export default function HistoryModal({
     onClear,
     onDeleteTransaction
 }) {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [activeFilter, setActiveFilter] = useState("all"); // "all" | "thisMonth" | "7days" | "gain" | "loss"
     const [deletingId, setDeletingId] = useState(null);
     const [confirmTxn, setConfirmTxn] = useState(null);
 
@@ -17,11 +19,67 @@ export default function HistoryModal({
     const history = friend?.history || [];
     const isEmpty = history.length === 0;
 
-    const handleDeleteSingle = async (h, index) => {
-        const idToPass = h._id ? h._id.toString() : `idx_${index}`;
+    // Filtered transaction list
+    const filteredHistory = useMemo(() => {
+        if (isEmpty) return [];
+
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        return history.filter((h) => {
+            const txnDate = new Date(h.date);
+
+            // 1. Date & Type Filter
+            if (activeFilter === "7days" && txnDate < sevenDaysAgo) {
+                return false;
+            }
+            if (activeFilter === "thisMonth" && txnDate < startOfMonth) {
+                return false;
+            }
+            if (activeFilter === "gain" && h.amount < 0) {
+                return false;
+            }
+            if (activeFilter === "loss" && h.amount >= 0) {
+                return false;
+            }
+
+            // 2. Search Query Filter (Notes, Amount, Date string)
+            if (searchQuery.trim()) {
+                const q = searchQuery.trim().toLowerCase();
+                const note = (h.description || "").toLowerCase();
+                const amountStr = Math.abs(h.amount).toString();
+                const dateStr = txnDate.toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric"
+                }).toLowerCase();
+
+                const matchesNote = note.includes(q);
+                const matchesAmount = amountStr.includes(q);
+                const matchesDate = dateStr.includes(q);
+
+                if (!matchesNote && !matchesAmount && !matchesDate) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }, [history, activeFilter, searchQuery, isEmpty]);
+
+    const isFilterActive = searchQuery.trim() !== "" || activeFilter !== "all";
+
+    const handleClearFilters = () => {
+        setSearchQuery("");
+        setActiveFilter("all");
+    };
+
+    const handleDeleteSingle = async (h, originalIndex) => {
+        const idToPass = h._id ? h._id.toString() : `idx_${originalIndex}`;
         setDeletingId(idToPass);
         try {
-            await onDeleteTransaction(idToPass, index);
+            await onDeleteTransaction(idToPass, originalIndex);
             setConfirmTxn(null);
         } finally {
             setDeletingId(null);
@@ -76,6 +134,92 @@ export default function HistoryModal({
                     </div>
                 )}
 
+                {/* Search & Date Filter Section */}
+                {!isEmpty && (
+                    <div className="history-search-filter-section">
+                        {/* Search Input */}
+                        <div className="history-search-wrap">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="history-search-icon">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input
+                                type="text"
+                                className="history-search-input"
+                                placeholder="Search note, amount, date..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    className="history-search-clear-btn"
+                                    onClick={() => setSearchQuery("")}
+                                    aria-label="Clear search"
+                                    title="Clear search"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Filter Pills */}
+                        <div className="history-filter-pills-row">
+                            <button
+                                type="button"
+                                className={`history-pill-btn ${activeFilter === "all" ? "active" : ""}`}
+                                onClick={() => setActiveFilter("all")}
+                            >
+                                All Time
+                            </button>
+                            <button
+                                type="button"
+                                className={`history-pill-btn ${activeFilter === "thisMonth" ? "active" : ""}`}
+                                onClick={() => setActiveFilter("thisMonth")}
+                            >
+                                This Month
+                            </button>
+                            <button
+                                type="button"
+                                className={`history-pill-btn ${activeFilter === "7days" ? "active" : ""}`}
+                                onClick={() => setActiveFilter("7days")}
+                            >
+                                Last 7 Days
+                            </button>
+                            <button
+                                type="button"
+                                className={`history-pill-btn gain-pill ${activeFilter === "gain" ? "active" : ""}`}
+                                onClick={() => setActiveFilter("gain")}
+                            >
+                                + You Got
+                            </button>
+                            <button
+                                type="button"
+                                className={`history-pill-btn loss-pill ${activeFilter === "loss" ? "active" : ""}`}
+                                onClick={() => setActiveFilter("loss")}
+                            >
+                                - You Gave
+                            </button>
+                        </div>
+
+                        {/* Status bar */}
+                        {isFilterActive && (
+                            <div className="history-filter-status-bar">
+                                <span>
+                                    Found <strong>{filteredHistory.length}</strong> of {history.length} transactions
+                                </span>
+                                <button
+                                    type="button"
+                                    className="btn-reset-filters"
+                                    onClick={handleClearFilters}
+                                >
+                                    Reset Filters
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Warning Confirmation Dialog Overlay */}
                 {confirmTxn && (
                     <div className="txn-delete-warning-box">
@@ -120,9 +264,24 @@ export default function HistoryModal({
                     <div className="empty-history-box">
                         <p>No transactions recorded yet.</p>
                     </div>
+                ) : filteredHistory.length === 0 ? (
+                    <div className="empty-history-search-box">
+                        <div className="empty-search-icon">🔍</div>
+                        <p className="empty-search-title">No matching transactions</p>
+                        <p className="empty-search-desc">
+                            No records found for "{searchQuery || activeFilter}". Try adjusting your search query or filters.
+                        </p>
+                        <button
+                            type="button"
+                            className="btn-clear-search-empty"
+                            onClick={handleClearFilters}
+                        >
+                            Clear All Filters
+                        </button>
+                    </div>
                 ) : (
                     <ul className="history-list">
-                        {history.map((h, i) => {
+                        {filteredHistory.map((h, i) => {
                             const isLoss = h.amount < 0;
                             const formattedDate = new Date(h.date).toLocaleDateString("en-IN", {
                                 day: "numeric",
@@ -133,6 +292,7 @@ export default function HistoryModal({
                             });
                             const currentId = h._id ? h._id.toString() : `idx_${i}`;
                             const isDeleting = deletingId === currentId;
+                            const originalIndex = history.findIndex((item) => (item._id && h._id ? item._id === h._id : item === h));
 
                             return (
                                 <li key={currentId || i} className="history-item-row">
@@ -156,7 +316,7 @@ export default function HistoryModal({
                                             className="btn-delete-single-txn"
                                             title="Delete this transaction"
                                             disabled={isDeleting}
-                                            onClick={() => setConfirmTxn({ txn: h, index: i })}
+                                            onClick={() => setConfirmTxn({ txn: h, index: originalIndex >= 0 ? originalIndex : i })}
                                         >
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                 <line x1="18" y1="6" x2="6" y2="18"></line>
