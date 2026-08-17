@@ -7,17 +7,12 @@ export default function Home() {
         <div className="home-wrapper">
             <Header variant="public" />
 
-            {/* ================= HERO SECTION ================= */}
+            {/* ================= HERO SECTION (FIRST FOLD) ================= */}
             <section className="hero-section">
                 <div className="hero-glow-sphere"></div>
                 <div className="hero-glow-sphere secondary"></div>
 
                 <div className="hero-content">
-                    <div className="hero-badge">
-                        <span className="badge-dot"></span>
-                        Smart Money Tracking for Everyday Life
-                    </div>
-
                     <h1 className="hero-title">
                         Track Money with Friends. <br />
                         <span className="hero-gradient-text">Without Confusion.</span>
@@ -38,49 +33,61 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* Hero Interactive CSS Mockup Banner */}
-                <div className="hero-mockup-wrapper">
-                    <div className="hero-mockup-card">
-                        <div className="mockup-header-bar">
-                            <div className="mockup-dots">
-                                <span className="dot red"></span>
-                                <span className="dot yellow"></span>
-                                <span className="dot green"></span>
-                            </div>
-                            <span className="mockup-tag">kharchee Live Preview</span>
-                        </div>
-                        <div className="hero-mockup-body">
-                            <div className="mockup-summary-mini">
-                                <div className="mini-stat">
-                                    <span className="mini-label">You Will Get</span>
-                                    <span className="mini-val green">+₹ 2,450</span>
-                                </div>
-                                <div className="mini-stat">
-                                    <span className="mini-label">You Owe</span>
-                                    <span className="mini-val red">-₹ 600</span>
-                                </div>
-                                <div className="mini-stat">
-                                    <span className="mini-label">Net Balance</span>
-                                    <span className="mini-val purple">+₹ 1,850</span>
-                                </div>
-                            </div>
+                {/* Subtle Scroll Down Indicator */}
+                <a href="#preview-showcase" className="hero-scroll-indicator" aria-label="Scroll to preview">
+                    <span className="scroll-text">Scroll to explore</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="scroll-arrow-svg">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+            </section>
 
-                            <div className="mockup-friends-mini">
-                                <div className="mini-friend-row">
-                                    <div className="mini-friend-avatar">R</div>
-                                    <div className="mini-friend-details">
-                                        <strong>Rahul Sharma</strong>
-                                        <small>Dinner & Cab share</small>
-                                    </div>
-                                    <span className="mini-badge-green">You will get ₹850</span>
+            {/* ================= LIVE PREVIEW SHOWCASE (LOWER PART ON SCROLL) ================= */}
+            <section className="hero-preview-section" id="preview-showcase">
+                <div className="section-container">
+                    <div className="hero-mockup-wrapper">
+                        <div className="hero-mockup-card">
+                            <div className="mockup-header-bar">
+                                <div className="mockup-dots">
+                                    <span className="dot red"></span>
+                                    <span className="dot yellow"></span>
+                                    <span className="dot green"></span>
                                 </div>
-                                <div className="mini-friend-row">
-                                    <div className="mini-friend-avatar orange">A</div>
-                                    <div className="mini-friend-details">
-                                        <strong>Amit Verma</strong>
-                                        <small>Movie ticket</small>
+                                <span className="mockup-tag">kharchee Live Preview</span>
+                            </div>
+                            <div className="hero-mockup-body">
+                                <div className="mockup-summary-mini">
+                                    <div className="mini-stat">
+                                        <span className="mini-label">You Will Get</span>
+                                        <span className="mini-val green">+₹ 2,450</span>
                                     </div>
-                                    <span className="mini-badge-red">You owe ₹300</span>
+                                    <div className="mini-stat">
+                                        <span className="mini-label">You Owe</span>
+                                        <span className="mini-val red">-₹ 600</span>
+                                    </div>
+                                    <div className="mini-stat">
+                                        <span className="mini-label">Net Balance</span>
+                                        <span className="mini-val purple">+₹ 1,850</span>
+                                    </div>
+                                </div>
+
+                                <div className="mockup-friends-mini">
+                                    <div className="mini-friend-row">
+                                        <div className="mini-friend-avatar">R</div>
+                                        <div className="mini-friend-details">
+                                            <strong>Rahul Sharma</strong>
+                                            <small>Dinner & Cab share</small>
+                                        </div>
+                                        <span className="mini-badge-green">You will get ₹850</span>
+                                    </div>
+                                    <div className="mini-friend-row">
+                                        <div className="mini-friend-avatar orange">A</div>
+                                        <div className="mini-friend-details">
+                                            <strong>Amit Verma</strong>
+                                            <small>Movie ticket</small>
+                                        </div>
+                                        <span className="mini-badge-red">You owe ₹300</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
