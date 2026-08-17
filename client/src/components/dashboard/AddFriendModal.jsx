@@ -86,6 +86,7 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                                 onChange={(e) => setMobile(e.target.value)}
                             />
                         </div>
+                        <p className="field-subnote">Please enter the correct WhatsApp number of your friend.</p>
                     </div>
 
                     <p className="modal-info-note">
