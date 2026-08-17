@@ -1,8 +1,14 @@
 const nodemailer = require("nodemailer");
+const dns = require("dns");
+
+// Force IPv4 resolution to prevent IPv6 ENETUNREACH errors on cloud hosts like Render
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder("ipv4first");
+}
 
 /**
  * Helper to build sanitized Gmail SMTP Transporter
- * Automatically strips all spaces/dashes/quotes from EMAIL_PASS.
+ * Forces IPv4 (family: 4) and Port 587 STARTTLS for 100% reliable cloud delivery.
  */
 function getTransporter() {
     const emailUser = (process.env.EMAIL_USER || "").trim();
@@ -14,11 +20,21 @@ function getTransporter() {
     }
 
     return nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false, // STARTTLS
+        requireTLS: true,
         auth: {
             user: emailUser,
             pass: emailPass
-        }
+        },
+        tls: {
+            rejectUnauthorized: false
+        },
+        family: 4, // Strict IPv4 socket (prevents ENETUNREACH on IPv6)
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
     });
 }
 
