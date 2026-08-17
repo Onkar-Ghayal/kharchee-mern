@@ -332,13 +332,31 @@ export default function Home() {
 
                         <div className="footer-col">
                             <h4>Connect</h4>
-                            <ul>
-                                <li>
-                                    <a href="https://www.instagram.com/kharchee.in/" target="_blank" rel="noreferrer">
-                                        Instagram
-                                    </a>
-                                </li>
-                            </ul>
+                            <div className="footer-social-links">
+                                <a
+                                    href="https://www.instagram.com/kharchee.in/"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="footer-social-btn instagram"
+                                    aria-label="Instagram"
+                                    title="Follow @kharchee.in on Instagram"
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <radialGradient id="ig-grad" r="150%" cx="30%" cy="107%">
+                                                <stop stopColor="#fdf497" offset="0%" />
+                                                <stop stopColor="#fdf497" offset="5%" />
+                                                <stop stopColor="#fd5949" offset="45%" />
+                                                <stop stopColor="#d6249f" offset="60%" />
+                                                <stop stopColor="#285AEB" offset="90%" />
+                                            </radialGradient>
+                                        </defs>
+                                        <rect x="2" y="2" width="20" height="20" rx="5.5" stroke="url(#ig-grad)" strokeWidth="2.2" />
+                                        <circle cx="12" cy="12" r="4.2" stroke="url(#ig-grad)" strokeWidth="2.2" />
+                                        <circle cx="17.5" cy="6.5" r="1.2" fill="url(#ig-grad)" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
