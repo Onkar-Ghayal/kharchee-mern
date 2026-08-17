@@ -568,11 +568,15 @@ export default function Dashboard() {
             {/* 7. Transaction History Modal */}
             <HistoryModal
                 open={historyOpen}
-                friend={activeFriend}
+                friend={allFriends.find((f) => f._id === activeFriend?._id) || activeFriend}
                 userName={user?.name || "User"}
                 onClose={() => setHistoryOpen(false)}
                 onClear={handleClearHistory}
                 onDeleteTransaction={handleDeleteSingleTransaction}
+                onAddExpense={(f) => {
+                    setHistoryOpen(false);
+                    openAddAmountModal(f);
+                }}
             />
 
             {/* 8. WhatsApp Reminder Modal */}

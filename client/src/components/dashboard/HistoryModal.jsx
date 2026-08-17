@@ -7,7 +7,8 @@ export default function HistoryModal({
     userName = "User",
     onClose,
     onClear,
-    onDeleteTransaction
+    onDeleteTransaction,
+    onAddExpense
 }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("all"); // "all" | "thisMonth" | "7days" | "gain" | "loss"
@@ -19,6 +20,14 @@ export default function HistoryModal({
     const history = Array.isArray(friend?.history) ? friend.history : [];
     const isEmpty = history.length === 0;
     const friendName = friend?.name || "Friend";
+    const initial = friendName.charAt(0).toUpperCase();
+    const currentAmount = Number(friend?.currentAmount) || 0;
+    const isLoss = currentAmount < 0;
+    const isZero = currentAmount === 0;
+
+    // Calculate totals
+    const totalGiven = history.reduce((acc, h) => (Number(h?.amount) > 0 ? acc + Number(h.amount) : acc), 0);
+    const totalTaken = history.reduce((acc, h) => (Number(h?.amount) < 0 ? acc + Math.abs(Number(h.amount)) : acc), 0);
 
     // Format safe date helper
     const formatDate = (dateVal) => {
@@ -101,7 +110,7 @@ export default function HistoryModal({
             }
             setConfirmTxn(null);
         } catch (err) {
-            console.error("Error deleting single transaction:", err);
+            console.error("Error deleting transaction:", err);
         } finally {
             setDeletingId(null);
         }
@@ -114,11 +123,51 @@ export default function HistoryModal({
                 <div className="modal-header-row">
                     <div>
                         <h3>Transaction History</h3>
-                        <p className="history-friend-subtitle">With {friendName}</p>
+                        <p className="history-friend-subtitle">Ledger with {friendName}</p>
                     </div>
                     <button type="button" className="modal-close-x" onClick={onClose} aria-label="Close">
                         ✕
                     </button>
+                </div>
+
+                {/* Friend Ledger Summary Header Card */}
+                <div className="history-ledger-hero-card">
+                    <div className="ledger-hero-top">
+                        <div className="ledger-hero-avatar">{initial}</div>
+                        <div className="ledger-hero-meta">
+                            <h4 className="ledger-hero-name">{friendName}</h4>
+                            {friend?.mobile ? (
+                                <span className="ledger-hero-phone">📱 {friend.mobile}</span>
+                            ) : (
+                                <span className="ledger-hero-phone-empty">No mobile attached</span>
+                            )}
+                        </div>
+                        <div className="ledger-hero-balance-badge">
+                            <span className="ledger-bal-label">
+                                {isLoss ? "You Owe" : isZero ? "Settled" : "You Will Get"}
+                            </span>
+                            <span className={`ledger-bal-val ${isLoss ? "loss" : isZero ? "settled" : "gain"}`}>
+                                {isLoss ? "-" : isZero ? "" : "+"}₹{Math.abs(currentAmount).toLocaleString("en-IN")}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="ledger-hero-stats-row">
+                        <div className="ledger-stat-item">
+                            <span className="stat-caption">Total Received</span>
+                            <span className="stat-value gain">+₹{totalGiven.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="ledger-stat-divider" />
+                        <div className="ledger-stat-item">
+                            <span className="stat-caption">Total Paid</span>
+                            <span className="stat-value loss">-₹{totalTaken.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="ledger-stat-divider" />
+                        <div className="ledger-stat-item">
+                            <span className="stat-caption">Total Entries</span>
+                            <span className="stat-value neutral">{history.length}</span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Statement Download Bar */}
@@ -281,9 +330,24 @@ export default function HistoryModal({
                     </div>
                 )}
 
+                {/* Main Content Area */}
                 {isEmpty ? (
-                    <div className="empty-history-box">
-                        <p>No transactions recorded yet.</p>
+                    <div className="empty-history-enhanced-box">
+                        <div className="empty-history-icon-bubble">📜</div>
+                        <h4>No Transactions Yet</h4>
+                        <p>
+                            You haven't recorded any payments or expenses with <strong>{friendName}</strong> yet.
+                            Add an expense or settle a balance to build your transaction ledger.
+                        </p>
+                        {onAddExpense && (
+                            <button
+                                type="button"
+                                className="btn-add-first-expense"
+                                onClick={() => onAddExpense(friend)}
+                            >
+                                + Add First Expense
+                            </button>
+                        )}
                     </div>
                 ) : filteredHistory.length === 0 ? (
                     <div className="empty-history-search-box">
@@ -305,7 +369,7 @@ export default function HistoryModal({
                         {filteredHistory.map((h, i) => {
                             if (!h) return null;
                             const amount = Number(h.amount) || 0;
-                            const isLoss = amount < 0;
+                            const isLossItem = amount < 0;
                             const formattedDate = formatDate(h.date);
                             const currentId = h._id ? String(h._id) : `idx_${i}`;
                             const isDeleting = deletingId === currentId;
@@ -316,17 +380,22 @@ export default function HistoryModal({
                             return (
                                 <li key={currentId || i} className="history-item-row">
                                     <div className="history-item-left">
-                                        <div className="history-item-date">{formattedDate}</div>
-                                        {h.description && (
-                                            <div className="history-item-note">
-                                                {h.description}
-                                            </div>
-                                        )}
+                                        <div className="history-item-date-row">
+                                            <span className="history-item-date">{formattedDate}</span>
+                                            {h.type && h.type !== "transaction" && (
+                                                <span className={`history-type-badge ${h.type}`}>
+                                                    {h.type}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="history-item-note">
+                                            {h.description || "General transaction"}
+                                        </div>
                                     </div>
 
                                     <div className="history-item-right">
-                                        <span className={`history-amount-pill ${isLoss ? "loss" : "gain"}`}>
-                                            {isLoss ? "-" : "+"}₹{Math.abs(amount).toLocaleString("en-IN")}
+                                        <span className={`history-amount-pill ${isLossItem ? "loss" : "gain"}`}>
+                                            {isLossItem ? "-" : "+"}₹{Math.abs(amount).toLocaleString("en-IN")}
                                         </span>
 
                                         {/* Click to open Warning confirmation */}
