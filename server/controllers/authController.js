@@ -468,3 +468,26 @@ exports.updateProfile = async (req, res) => {
         res.status(500).json({ message: "Server error updating profile" });
     }
 };
+
+/* ==========================================================================
+   10. DIAGNOSTIC TEST EMAIL ENDPOINT
+   ========================================================================== */
+exports.testEmail = async (req, res) => {
+    const targetEmail = req.query.email || process.env.EMAIL_USER || "test@example.com";
+    const testOtp = generateOTP();
+
+    const emailUser = (process.env.EMAIL_USER || "").trim();
+    const emailPassSet = Boolean(process.env.EMAIL_PASS);
+
+    const result = await sendOtpEmail(targetEmail, testOtp, "verification");
+
+    res.json({
+        diagnostic: {
+            configuredEmailUser: emailUser ? `${emailUser.slice(0, 3)}***@gmail.com` : "NOT_SET",
+            emailPassProvided: emailPassSet,
+            recipient: targetEmail,
+            generatedOtp: testOtp,
+            deliveryResult: result
+        }
+    });
+};

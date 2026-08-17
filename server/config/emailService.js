@@ -3,31 +3,22 @@ const nodemailer = require("nodemailer");
 /**
  * Helper to build sanitized Gmail SMTP Transporter
  * Automatically strips all spaces/dashes/quotes from EMAIL_PASS.
- * Uses Port 587 with STARTTLS for maximum cloud hosting (Render/AWS) compatibility.
  */
 function getTransporter() {
     const emailUser = (process.env.EMAIL_USER || "").trim();
-    const emailPass = (process.env.EMAIL_PASS || "").replace(/[\s"-]/g, "").trim();
+    // Strip everything except alphanumeric characters (App Password is 16 letters)
+    const emailPass = (process.env.EMAIL_PASS || "").replace(/[^a-zA-Z0-9]/g, "").trim();
 
     if (!emailUser || !emailPass) {
         return null;
     }
 
     return nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // false for port 587 STARTTLS
-        requireTLS: true,
+        service: "gmail",
         auth: {
             user: emailUser,
             pass: emailPass
-        },
-        tls: {
-            rejectUnauthorized: false
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
+        }
     });
 }
 
@@ -146,27 +137,25 @@ https://kharchee.vercel.app
 
     if (transporter && emailUser) {
         try {
-            await transporter.sendMail({
+            const info = await transporter.sendMail({
                 from: `"Kharchee" <${emailUser}>`,
                 to: toEmail,
                 subject: subject,
                 text: text,
-                html: html,
-                headers: {
-                    "X-Priority": "1 (Highest)",
-                    "X-MSMail-Priority": "High",
-                    Importance: "High"
-                }
+                html: html
             });
-            console.log(`✅ Email successfully delivered to: ${toEmail}`);
+            console.log(`✅ Email successfully delivered to: ${toEmail} | ID: ${info.messageId}`);
+            return { success: true, messageId: info.messageId };
         } catch (err) {
             console.error("❌ Gmail SMTP delivery failed:", err.message);
             if (err.message && err.message.includes("Username and Password not accepted")) {
                 console.error("👉 Reason: Google rejected the credentials. Ensure EMAIL_USER and EMAIL_PASS are correct.");
             }
+            return { success: false, error: err.message };
         }
     } else {
         console.warn("⚠️ EMAIL_USER or EMAIL_PASS is not set in environment variables.");
+        return { success: false, error: "EMAIL_USER or EMAIL_PASS not configured in environment" };
     }
 }
 
