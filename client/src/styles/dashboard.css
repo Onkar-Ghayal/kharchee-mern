@@ -3695,109 +3695,389 @@
         border-radius: 8px;
     }
 
-    /* Modals on Mobile */
+    /* =====================================================
+       COMPACT MOBILE MODALS & FORMS
+    ===================================================== */
     .modal {
-        padding: 0.75rem;
+        padding: 0.65rem;
     }
 
     .modal-content {
-        padding: 1.5rem 1.15rem;
-        border-radius: 18px;
-        max-height: 92vh;
+        padding: 1.15rem 0.95rem;
+        border-radius: 16px;
+        max-height: 88vh;
         width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modal-content h3,
+    .modal-header-row h3 {
+        font-size: 1.05rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-close-x {
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+    }
+
+    .modal-content .form-group {
+        margin-bottom: 0.7rem;
+        gap: 0.25rem;
+    }
+
+    .modal-content .form-group label,
+    .form-label {
+        font-size: 0.75rem;
+        margin-bottom: 0.15rem;
     }
 
     .modal-content input,
     .modal-content select,
-    .modal-content textarea {
-        font-size: 16px !important; /* Prevents auto-zoom on iOS */
+    .modal-content textarea,
+    .form-input {
+        height: 38px;
+        min-height: 38px;
+        padding: 0.5rem 0.7rem !important;
+        border-radius: 8px !important;
+        font-size: 15px !important; /* Prevents auto-zoom on iOS */
     }
 
+    .phone-input-wrap {
+        height: 38px;
+        min-height: 38px;
+    }
+
+    .country-code-prefix {
+        padding: 0 0.55rem;
+        font-size: 0.8rem;
+    }
+
+    .modal-actions {
+        margin-top: 0.85rem;
+        gap: 0.5rem;
+    }
+
+    .btn-submit,
+    .btn-cancel {
+        height: 38px;
+        padding: 0 0.85rem;
+        font-size: 0.825rem;
+        border-radius: 8px;
+    }
+
+    /* Transaction Type Toggle Pills (+ You Will Get / - You Owe) */
+    .transaction-type-selector {
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .txn-type-choice-btn {
+        height: 36px;
+        padding: 0.35rem 0.55rem;
+        font-size: 0.775rem;
+        border-radius: 8px;
+    }
+
+    /* Split Bill Modal on Mobile */
+    .split-type-tabs {
+        margin-bottom: 0.65rem;
+    }
+
+    .split-tab-btn {
+        height: 32px;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .split-friends-checklist {
+        max-height: 160px;
+        gap: 0.3rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .split-friend-row {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.775rem;
+    }
+
+    .split-share-input {
+        height: 30px !important;
+        min-height: 30px !important;
+        font-size: 0.8rem !important;
+        width: 70px;
+        padding: 0.2rem 0.4rem !important;
+    }
+
+    .split-summary-card {
+        padding: 0.6rem 0.75rem;
+        margin-top: 0.6rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+    }
+
+    .split-review-card {
+        padding: 0.65rem 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    /* Add Friend Modal on Mobile */
+    .upi-app-selector-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.35rem;
+    }
+
+    .upi-app-choice-btn {
+        height: 32px;
+        font-size: 0.725rem;
+    }
+
+    .upi-direct-note-banner {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.7rem;
+        margin-top: 0.35rem;
+    }
+
+    .modal-info-note {
+        font-size: 0.725rem;
+        margin: 0.4rem 0;
+    }
+
+    /* Payment Modal on Mobile */
     .professional-pay-card {
-        padding: 1.25rem 1.05rem;
+        padding: 1rem 0.85rem;
         max-height: 90vh;
         width: 100%;
-        border-radius: 18px;
+        border-radius: 16px;
         box-sizing: border-box;
     }
 
     .pay-modal-header {
-        margin-bottom: 0.9rem;
-        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.55rem;
     }
 
     .pay-modal-header h3 {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
     }
 
     .recipient-summary-box {
-        padding: 0.75rem 0.85rem;
+        padding: 0.65rem 0.75rem;
+        margin-bottom: 0.75rem;
     }
 
     .recipient-avatar {
-        width: 34px;
-        height: 34px;
-        font-size: 0.9rem;
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
     }
 
     .recipient-name {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .pay-amount-input {
-        height: 48px;
-        font-size: 1.35rem;
+        height: 42px !important;
+        min-height: 42px !important;
+        font-size: 1.2rem !important;
     }
 
     .pay-quick-presets {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 0.35rem;
+        gap: 0.3rem;
+        margin-bottom: 0.75rem;
     }
 
     .pay-quick-presets button {
-        padding: 0.4rem 0.2rem;
-        font-size: 0.75rem;
+        padding: 0.35rem 0.15rem;
+        font-size: 0.725rem;
+        height: 28px;
         text-align: center;
     }
 
     .pay-quick-presets .btn-preset-full-due {
         grid-column: span 4;
-        padding: 0.45rem;
+        height: 30px;
+        padding: 0.35rem;
     }
 
     .direct-upi-launch-box {
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
     }
 
     .btn-launch-mobile-upi {
-        height: 48px;
-        font-size: 0.9rem;
-        border-radius: 12px;
+        height: 40px;
+        font-size: 0.825rem;
+        border-radius: 10px;
         justify-content: center;
     }
 
     .pay-modal-footer {
         flex-direction: column;
-        gap: 0.55rem;
-        margin-top: 1.25rem;
+        gap: 0.45rem;
+        margin-top: 0.95rem;
     }
 
     .btn-pay-submit {
         width: 100%;
-        height: 50px;
-        font-size: 1rem;
+        height: 42px;
+        font-size: 0.875rem;
         font-weight: 800;
-        border-radius: 14px;
+        border-radius: 10px;
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 3px 12px rgba(16, 185, 129, 0.35);
     }
 
     .btn-pay-cancel {
         width: 100%;
-        height: 44px;
-        font-size: 0.875rem;
+        height: 36px;
+        font-size: 0.8rem;
         font-weight: 700;
+        border-radius: 10px;
+    }
+
+    /* WhatsApp Reminder Modal on Mobile */
+    .reminder-template-chips {
+        gap: 0.3rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .template-chip-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 6px;
+    }
+
+    .reminder-custom-textarea {
+        height: 65px !important;
+        min-height: 65px !important;
+        font-size: 0.8rem !important;
+        padding: 0.45rem 0.65rem !important;
+    }
+
+    .whatsapp-preview-box {
+        padding: 0.55rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .whatsapp-chat-bubble {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.75rem;
+    }
+
+    /* Calculator Modal on Mobile */
+    .calculator-modal-content {
+        padding: 0.85rem !important;
+        max-width: 290px !important;
+    }
+
+    .calculator-display {
+        height: 42px;
+        font-size: 1.15rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 10px;
+        margin-bottom: 0.55rem;
+    }
+
+    .calculator-buttons {
+        gap: 0.3rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .calculator-buttons button {
+        height: 34px;
+        font-size: 0.875rem;
+        border-radius: 8px;
+    }
+
+    .btn-use-calculated {
+        height: 36px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+
+    /* History Modal on Mobile */
+    .history-export-toolbar {
+        gap: 0.3rem;
+        margin: 0.45rem 0;
+    }
+
+    .btn-export-statement {
+        height: 32px;
+        padding: 0.3rem 0.5rem;
+        font-size: 0.725rem;
+        border-radius: 8px;
+    }
+
+    .history-list {
+        max-height: 220px;
+        gap: 0.3rem;
+    }
+
+    .history-item-row {
+        padding: 0.5rem 0.65rem;
+    }
+
+    .history-item-date {
+        font-size: 0.725rem;
+    }
+
+    .history-item-note {
+        font-size: 0.675rem;
+    }
+
+    .history-amount-pill {
+        font-size: 0.825rem;
+    }
+
+    /* Tour Modal on Mobile */
+    .tour-modal-content {
+        padding: 1.15rem 0.95rem;
+        border-radius: 16px;
+    }
+
+    .tour-icon-bubble {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+        margin-bottom: 0.55rem;
         border-radius: 12px;
+    }
+
+    .tour-step-title {
+        font-size: 1rem;
+    }
+
+    .tour-step-headline {
+        font-size: 0.775rem;
+        margin-bottom: 0.45rem;
+    }
+
+    .tour-step-desc {
+        font-size: 0.75rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .tour-highlights-box {
+        padding: 0.55rem 0.65rem;
+        gap: 0.25rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .tour-highlight-item {
+        font-size: 0.7rem;
+    }
+
+    .tour-footer-toolbar {
+        gap: 0.45rem;
+    }
+
+    .tour-btn-back,
+    .tour-btn-next {
+        height: 36px;
+        font-size: 0.775rem;
+        border-radius: 8px;
     }
 }

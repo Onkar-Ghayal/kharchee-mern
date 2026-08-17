@@ -231,14 +231,24 @@ export default function NotificationCenter({
                                         </span>
                                     )}
                                 </div>
-                                <button
-                                    type="button"
-                                    className="btn-mark-all-read"
-                                    onClick={markAllAsRead}
-                                    disabled={unreadCount === 0}
-                                >
-                                    Mark all as read
-                                </button>
+                                <div className="notif-header-actions-group">
+                                    <button
+                                        type="button"
+                                        className="btn-mark-all-read"
+                                        onClick={markAllAsRead}
+                                        disabled={unreadCount === 0}
+                                    >
+                                        Mark all read
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="notif-btn-close"
+                                        onClick={() => setOpen(false)}
+                                        aria-label="Close"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

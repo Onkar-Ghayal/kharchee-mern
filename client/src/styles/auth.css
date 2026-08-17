@@ -496,19 +496,93 @@
 }
 
 /* -------------------- RESPONSIVE -------------------- */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+    .auth-section {
+        padding: 1.25rem 0.85rem;
+        min-height: calc(100vh - 65px);
+    }
+
     .auth-card {
-        padding: 2rem 1.5rem;
+        padding: 1.35rem 1.15rem;
         border-radius: 14px;
+        max-width: 100%;
+    }
+
+    .auth-card-header {
+        margin-bottom: 1.15rem;
+    }
+
+    .auth-brand-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .auth-card-header h2 {
+        font-size: 1.35rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .auth-card-header .sub-text {
+        font-size: 0.8rem;
+    }
+
+    .google-btn-wrapper {
+        margin-bottom: 0.85rem;
+    }
+
+    .auth-divider {
+        margin: 1rem 0;
+        font-size: 0.725rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.85rem;
+        gap: 0.25rem;
+    }
+
+    .form-group label {
+        font-size: 0.775rem;
+    }
+
+    .form-group input {
+        height: 38px;
+        min-height: 38px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem !important;
+        border-radius: 8px;
+    }
+
+    .password-toggle-btn {
+        font-size: 0.75rem;
+        padding: 0 0.5rem;
+    }
+
+    .btn-auth-submit {
+        height: 40px;
+        font-size: 0.875rem;
+        border-radius: 8px;
+    }
+
+    .auth-bottom-links {
+        margin-top: 1rem;
+        font-size: 0.8rem;
     }
 
     .otp-inputs-row {
         gap: 0.35rem;
+        margin-bottom: 1rem;
     }
 
     .otp-input-box {
         width: 38px;
-        height: 48px;
-        font-size: 1.3rem;
+        height: 44px;
+        font-size: 1.25rem;
+        border-radius: 8px;
+    }
+
+    .otp-resend-row {
+        margin-top: 1rem;
+        font-size: 0.8rem;
     }
 }
+
