@@ -1,15 +1,16 @@
 /**
  * Kharchee - Executive Visual Receipt & Statement Card Generator
- * High-Definition HTML5 Canvas rendering for WhatsApp / Instagram / Gallery
- * Designed without QR codes for a clean, executive financial look.
+ * High-Definition Compact Fintech Card (Apple Card / Revolut / CRED Style)
+ * Optimized for perfect viewport fit and crisp readability.
  */
 
 export function drawReceiptCard(canvas, { friend, userName = "User", theme = "dark" }) {
     if (!canvas || !friend) return;
 
     const ctx = canvas.getContext("2d");
-    const width = 800;
-    const height = 1040;
+    // Compact, balanced 4:5 golden ratio dimensions
+    const width = 680;
+    const height = 820;
     canvas.width = width;
     canvas.height = height;
 
@@ -46,30 +47,30 @@ export function drawReceiptCard(canvas, { friend, userName = "User", theme = "da
         ctx.arcTo(x + w, y, x + w, y + h, r);
         ctx.arcTo(x + w, y + h, x, y + h, r);
         ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r);
+        ctx.arcTo(x, y + x, y, r);
         ctx.closePath();
         if (fill) ctx.fill();
         if (stroke) ctx.stroke();
     }
 
-    // 1. BACKGROUND CANVAS
+    // 1. BACKGROUND
     if (isDark) {
         const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-        bgGrad.addColorStop(0, "#0b0f19");
-        bgGrad.addColorStop(0.5, "#111827");
-        bgGrad.addColorStop(1, "#070a12");
+        bgGrad.addColorStop(0, "#0e1322");
+        bgGrad.addColorStop(0.5, "#131a2e");
+        bgGrad.addColorStop(1, "#0a0e1a");
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, width, height);
 
         // Ambient Glow Highlights
-        const glow1 = ctx.createRadialGradient(150, 100, 10, 150, 100, 350);
-        glow1.addColorStop(0, "rgba(99, 102, 241, 0.18)");
+        const glow1 = ctx.createRadialGradient(100, 80, 10, 100, 80, 300);
+        glow1.addColorStop(0, "rgba(99, 102, 241, 0.22)");
         glow1.addColorStop(1, "rgba(99, 102, 241, 0)");
         ctx.fillStyle = glow1;
         ctx.fillRect(0, 0, width, height);
 
-        const glow2 = ctx.createRadialGradient(650, 450, 10, 650, 450, 300);
-        glow2.addColorStop(0, "rgba(16, 185, 129, 0.12)");
+        const glow2 = ctx.createRadialGradient(580, 240, 10, 580, 240, 260);
+        glow2.addColorStop(0, "rgba(16, 185, 129, 0.16)");
         glow2.addColorStop(1, "rgba(16, 185, 129, 0)");
         ctx.fillStyle = glow2;
         ctx.fillRect(0, 0, width, height);
@@ -81,98 +82,92 @@ export function drawReceiptCard(canvas, { friend, userName = "User", theme = "da
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, width, height);
 
-        // Subtle warm glow
-        const glow = ctx.createRadialGradient(400, 200, 10, 400, 200, 400);
-        glow.addColorStop(0, "rgba(99, 102, 241, 0.06)");
+        const glow = ctx.createRadialGradient(340, 150, 10, 340, 150, 350);
+        glow.addColorStop(0, "rgba(99, 102, 241, 0.08)");
         glow.addColorStop(1, "rgba(99, 102, 241, 0)");
         ctx.fillStyle = glow;
         ctx.fillRect(0, 0, width, height);
     }
 
     // Outer Card Frame
-    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(226, 232, 240, 0.9)";
+    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(226, 232, 240, 1)";
     ctx.lineWidth = 2;
-    roundRect(ctx, 24, 24, width - 48, height - 48, 28, false, true);
+    roundRect(ctx, 20, 20, width - 40, height - 40, 24, false, true);
 
-    // 2. HEADER SECTION
-    // Top Bar Background
-    ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(241, 245, 249, 0.6)";
-    roundRect(ctx, 26, 26, width - 52, 90, 26, true, false);
-
-    // Brand Badge / Logo Icon
-    const brandGrad = ctx.createLinearGradient(50, 45, 94, 89);
+    // 2. HEADER
+    // Brand Badge
+    const brandGrad = ctx.createLinearGradient(42, 42, 86, 86);
     brandGrad.addColorStop(0, "#6366f1");
-    brandGrad.addColorStop(1, "#a855f7");
+    brandGrad.addColorStop(1, "#8b5cf6");
     ctx.fillStyle = brandGrad;
-    roundRect(ctx, 50, 46, 48, 48, 14, true, false);
+    roundRect(ctx, 42, 40, 44, 44, 12, true, false);
 
-    // Bolt Icon in Badge
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 24px 'Plus Jakarta Sans', sans-serif";
+    ctx.font = "bold 22px 'Plus Jakarta Sans', sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("⚡", 74, 80);
+    ctx.fillText("⚡", 64, 71);
 
     // Brand Name & Tagline
     ctx.textAlign = "left";
     ctx.fillStyle = isDark ? "#ffffff" : "#0f172a";
-    ctx.font = "800 24px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("KHARCHEE", 112, 68);
+    ctx.font = "800 22px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("KHARCHEE", 98, 62);
 
-    ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-    ctx.font = "600 12px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("OFFICIAL PAYMENT SLIP", 114, 86);
+    ctx.fillStyle = isDark ? "#818cf8" : "#6366f1";
+    ctx.font = "700 11px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("PAYMENT STATEMENT SLIP", 100, 78);
 
-    // Reference & Date Badge (Top Right)
+    // Ref & Date Badge (Top Right)
     ctx.textAlign = "right";
     ctx.fillStyle = isDark ? "#818cf8" : "#4f46e5";
-    ctx.font = "700 13px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(refCode, width - 55, 68);
+    ctx.font = "800 13px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(refCode, width - 42, 60);
 
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "600 12px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(`${dateFormatted} • ${timeFormatted}`, width - 55, 86);
+    ctx.font = "600 11px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(`${dateFormatted} • ${timeFormatted}`, width - 42, 78);
 
     // 3. RECIPIENT & SENDER PARTY META ROW
-    const partyY = 145;
-    ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.75)" : "#ffffff";
-    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(226, 232, 240, 0.8)";
+    const partyY = 104;
+    ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.7)" : "#ffffff";
+    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(226, 232, 240, 0.9)";
     ctx.lineWidth = 1.5;
-    roundRect(ctx, 50, partyY, width - 100, 84, 18, true, true);
+    roundRect(ctx, 42, partyY, width - 84, 68, 14, true, true);
 
     // Billed To (Left)
     ctx.textAlign = "left";
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "700 11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("BILLED TO / STATEMENT FOR", 74, partyY + 30);
+    ctx.font = "700 10px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("STATEMENT FOR / BILLED TO", 60, partyY + 24);
 
     ctx.fillStyle = isDark ? "#f8fafc" : "#0f172a";
-    ctx.font = "800 18px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(friendName, 74, partyY + 56);
+    ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(friendName, 60, partyY + 48);
 
     // Issued By (Right)
     ctx.textAlign = "right";
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "700 11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("ISSUED BY", width - 74, partyY + 30);
+    ctx.font = "700 10px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("ISSUED BY", width - 60, partyY + 24);
 
     ctx.fillStyle = isDark ? "#f8fafc" : "#0f172a";
-    ctx.font = "800 18px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(userName, width - 74, partyY + 56);
+    ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(userName, width - 60, partyY + 48);
 
     // 4. HERO STATEMENT AMOUNT BOX
-    const heroY = 250;
-    const heroHeight = 160;
-    const heroGrad = ctx.createLinearGradient(50, heroY, width - 50, heroY + heroHeight);
+    const heroY = 188;
+    const heroHeight = 126;
+    const heroGrad = ctx.createLinearGradient(42, heroY, width - 42, heroY + heroHeight);
 
     if (isDark) {
         if (isLoss) {
-            heroGrad.addColorStop(0, "rgba(239, 68, 68, 0.14)");
+            heroGrad.addColorStop(0, "rgba(239, 68, 68, 0.16)");
             heroGrad.addColorStop(1, "rgba(239, 68, 68, 0.04)");
         } else if (isZero) {
             heroGrad.addColorStop(0, "rgba(148, 163, 184, 0.12)");
             heroGrad.addColorStop(1, "rgba(148, 163, 184, 0.04)");
         } else {
-            heroGrad.addColorStop(0, "rgba(16, 185, 129, 0.16)");
+            heroGrad.addColorStop(0, "rgba(16, 185, 129, 0.18)");
             heroGrad.addColorStop(1, "rgba(16, 185, 129, 0.04)");
         }
     } else {
@@ -190,75 +185,75 @@ export function drawReceiptCard(canvas, { friend, userName = "User", theme = "da
 
     ctx.fillStyle = heroGrad;
     ctx.strokeStyle = isLoss
-        ? "rgba(239, 68, 68, 0.35)"
+        ? "rgba(239, 68, 68, 0.4)"
         : isZero
-        ? "rgba(148, 163, 184, 0.35)"
-        : "rgba(16, 185, 129, 0.35)";
+        ? "rgba(148, 163, 184, 0.4)"
+        : "rgba(16, 185, 129, 0.4)";
     ctx.lineWidth = 1.5;
-    roundRect(ctx, 50, heroY, width - 100, heroHeight, 22, true, true);
+    roundRect(ctx, 42, heroY, width - 84, heroHeight, 18, true, true);
 
-    // Hero Caption & Status Pill
+    // Hero Label
     ctx.textAlign = "left";
     ctx.fillStyle = isLoss ? "#ef4444" : isZero ? "#64748b" : "#10b981";
-    ctx.font = "800 12px 'Plus Jakarta Sans', sans-serif";
+    ctx.font = "800 11px 'Plus Jakarta Sans', sans-serif";
     ctx.fillText(
         isLoss ? "● TOTAL AMOUNT OWED" : isZero ? "● BALANCE SETTLED" : "● TOTAL AMOUNT DUE",
-        80,
-        heroY + 42
+        64,
+        heroY + 32
     );
 
     // Big Amount Figure
     ctx.fillStyle = isLoss ? "#ef4444" : isZero ? (isDark ? "#94a3b8" : "#64748b") : "#10b981";
-    ctx.font = "900 52px 'Plus Jakarta Sans', sans-serif";
+    ctx.font = "900 46px 'Plus Jakarta Sans', sans-serif";
     const amountStr = `₹ ${Math.abs(currentAmount).toLocaleString("en-IN")}`;
-    ctx.fillText(amountStr, 78, heroY + 104);
+    ctx.fillText(amountStr, 62, heroY + 86);
 
     // Status Tag Pill (Right side)
     const statusText = isLoss ? "YOU OWE" : isZero ? "SETTLED" : "PENDING PAYMENT";
     ctx.font = "800 11px 'Plus Jakarta Sans', sans-serif";
-    const statusWidth = ctx.measureText(statusText).width + 24;
-    const pillX = width - 80 - statusWidth;
-    const pillY = heroY + 68;
+    const statusWidth = ctx.measureText(statusText).width + 20;
+    const pillX = width - 64 - statusWidth;
+    const pillY = heroY + 54;
 
     ctx.fillStyle = isLoss
         ? "rgba(239, 68, 68, 0.18)"
         : isZero
         ? "rgba(148, 163, 184, 0.18)"
         : "rgba(16, 185, 129, 0.18)";
-    roundRect(ctx, pillX, pillY, statusWidth, 32, 16, true, false);
+    roundRect(ctx, pillX, pillY, statusWidth, 30, 15, true, false);
 
     ctx.textAlign = "center";
     ctx.fillStyle = isLoss ? "#ef4444" : isZero ? "#64748b" : "#10b981";
-    ctx.fillText(statusText, pillX + statusWidth / 2, pillY + 20);
+    ctx.fillText(statusText, pillX + statusWidth / 2, pillY + 19);
 
-    // 5. ITEMIZED RECENT LEDGER TRANSACTIONS
-    const ledgerY = 435;
+    // 5. ITEMIZED RECENT TRANSACTIONS
+    const ledgerY = 340;
     ctx.textAlign = "left";
     ctx.fillStyle = isDark ? "#ffffff" : "#0f172a";
-    ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("Recent Shared Ledger Activity", 54, ledgerY);
+    ctx.font = "800 15px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("Recent Shared Ledger Activity", 46, ledgerY);
 
     ctx.textAlign = "right";
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "600 12px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(`Total Entries: ${history.length}`, width - 54, ledgerY);
+    ctx.font = "600 11px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(`Total Entries: ${history.length}`, width - 46, ledgerY);
 
     // Transaction rows container
-    const listTop = ledgerY + 18;
-    const displayTxns = history.slice(0, 4);
+    const listTop = ledgerY + 12;
+    const displayTxns = history.slice(0, 3);
 
     if (displayTxns.length === 0) {
         ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.5)" : "#ffffff";
         ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(226, 232, 240, 0.8)";
-        roundRect(ctx, 50, listTop, width - 100, 120, 16, true, true);
+        roundRect(ctx, 42, listTop, width - 84, 90, 14, true, true);
 
         ctx.textAlign = "center";
         ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-        ctx.font = "600 14px 'Plus Jakarta Sans', sans-serif";
-        ctx.fillText("No transactions recorded yet in ledger.", width / 2, listTop + 65);
+        ctx.font = "600 13px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillText("No transactions recorded yet in ledger.", width / 2, listTop + 50);
     } else {
         displayTxns.forEach((txn, idx) => {
-            const rowY = listTop + idx * 68;
+            const rowY = listTop + idx * 56;
             const isRowLoss = Number(txn.amount) < 0;
             const amt = Number(txn.amount) || 0;
             const d = txn.date ? new Date(txn.date) : new Date();
@@ -268,86 +263,82 @@ export function drawReceiptCard(canvas, { friend, userName = "User", theme = "da
 
             // Row Card Background
             ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.65)" : "#ffffff";
-            ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(226, 232, 240, 0.8)";
+            ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(226, 232, 240, 0.8)";
             ctx.lineWidth = 1;
-            roundRect(ctx, 50, rowY, width - 100, 58, 14, true, true);
+            roundRect(ctx, 42, rowY, width - 84, 48, 12, true, true);
 
             // Date Badge
-            ctx.fillStyle = isDark ? "rgba(99, 102, 241, 0.12)" : "rgba(99, 102, 241, 0.08)";
-            roundRect(ctx, 64, rowY + 12, 68, 34, 8, true, false);
+            ctx.fillStyle = isDark ? "rgba(99, 102, 241, 0.14)" : "rgba(99, 102, 241, 0.08)";
+            roundRect(ctx, 54, rowY + 9, 62, 30, 8, true, false);
 
             ctx.textAlign = "center";
             ctx.fillStyle = isDark ? "#818cf8" : "#4f46e5";
-            ctx.font = "800 12px 'Plus Jakarta Sans', sans-serif";
-            ctx.fillText(dateStr, 98, rowY + 33);
+            ctx.font = "800 11px 'Plus Jakarta Sans', sans-serif";
+            ctx.fillText(dateStr, 85, rowY + 28);
 
             // Description / Note
             ctx.textAlign = "left";
             ctx.fillStyle = isDark ? "#f8fafc" : "#0f172a";
-            ctx.font = "700 14px 'Plus Jakarta Sans', sans-serif";
+            ctx.font = "700 13px 'Plus Jakarta Sans', sans-serif";
             const noteText = txn.description || "General Shared Expense";
-            const truncatedNote = noteText.length > 34 ? noteText.slice(0, 32) + "..." : noteText;
-            ctx.fillText(truncatedNote, 148, rowY + 34);
+            const truncatedNote = noteText.length > 30 ? noteText.slice(0, 28) + "..." : noteText;
+            ctx.fillText(truncatedNote, 126, rowY + 30);
 
             // Amount
             ctx.textAlign = "right";
             ctx.fillStyle = isRowLoss ? "#ef4444" : "#10b981";
-            ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
-            ctx.fillText(`${isRowLoss ? "-" : "+"}₹${Math.abs(amt).toLocaleString("en-IN")}`, width - 72, rowY + 35);
+            ctx.font = "800 15px 'Plus Jakarta Sans', sans-serif";
+            ctx.fillText(`${isRowLoss ? "-" : "+"}₹${Math.abs(amt).toLocaleString("en-IN")}`, width - 58, rowY + 30);
         });
     }
 
     // 6. TOTALS SUMMARY FOOTER BAR
-    const summaryY = 765;
+    const summaryY = displayTxns.length === 0 ? listTop + 104 : listTop + displayTxns.length * 56 + 12;
     ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.8)" : "rgba(241, 245, 249, 0.9)";
     ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(226, 232, 240, 0.9)";
-    roundRect(ctx, 50, summaryY, width - 100, 80, 16, true, true);
+    roundRect(ctx, 42, summaryY, width - 84, 68, 14, true, true);
 
-    const colW = (width - 100) / 3;
+    const colW = (width - 84) / 3;
 
     // Col 1: Total Received
     ctx.textAlign = "center";
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "700 11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("TOTAL RECEIVED", 50 + colW * 0.5, summaryY + 30);
+    ctx.font = "700 10px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("TOTAL RECEIVED", 42 + colW * 0.5, summaryY + 24);
     ctx.fillStyle = "#10b981";
-    ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(`+₹${totalGiven.toLocaleString("en-IN")}`, 50 + colW * 0.5, summaryY + 56);
+    ctx.font = "800 15px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(`+₹${totalGiven.toLocaleString("en-IN")}`, 42 + colW * 0.5, summaryY + 48);
 
     // Col 2: Total Paid
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "700 11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("TOTAL PAID", 50 + colW * 1.5, summaryY + 30);
+    ctx.font = "700 10px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("TOTAL PAID", 42 + colW * 1.5, summaryY + 24);
     ctx.fillStyle = "#ef4444";
-    ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText(`-₹${totalTaken.toLocaleString("en-IN")}`, 50 + colW * 1.5, summaryY + 56);
+    ctx.font = "800 15px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText(`-₹${totalTaken.toLocaleString("en-IN")}`, 42 + colW * 1.5, summaryY + 48);
 
     // Col 3: Net Ledger Status
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "700 11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("NET BALANCE", 50 + colW * 2.5, summaryY + 30);
+    ctx.font = "700 10px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("NET BALANCE", 42 + colW * 2.5, summaryY + 24);
     ctx.fillStyle = isLoss ? "#ef4444" : isZero ? (isDark ? "#94a3b8" : "#64748b") : "#10b981";
-    ctx.font = "800 16px 'Plus Jakarta Sans', sans-serif";
+    ctx.font = "800 15px 'Plus Jakarta Sans', sans-serif";
     ctx.fillText(
         `${isLoss ? "-" : isZero ? "" : "+"}₹${Math.abs(currentAmount).toLocaleString("en-IN")}`,
-        50 + colW * 2.5,
-        summaryY + 56
+        42 + colW * 2.5,
+        summaryY + 48
     );
 
-    // 7. EXECUTIVE TRUST SEAL & WATERMARK
-    const footerY = 880;
+    // 7. EXECUTIVE TRUST SEAL
+    const footerY = summaryY + 96;
     ctx.textAlign = "center";
     ctx.fillStyle = isDark ? "#818cf8" : "#4f46e5";
-    ctx.font = "700 13px 'Plus Jakarta Sans', sans-serif";
+    ctx.font = "800 12px 'Plus Jakarta Sans', sans-serif";
     ctx.fillText("🔒 Kharchee Verified Digital Statement", width / 2, footerY);
 
     ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
-    ctx.font = "500 12px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("Smart Split & Expense Tracking • kharchee.vercel.app", width / 2, footerY + 22);
-
-    ctx.fillStyle = isDark ? "#475569" : "#cbd5e1";
     ctx.font = "500 11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillText("Please settle via your preferred payment app (GPay / PhonePe / Paytm / Bank)", width / 2, footerY + 44);
+    ctx.fillText("Smart Split & Expense Tracking • kharchee.vercel.app", width / 2, footerY + 18);
 }
 
 /**
