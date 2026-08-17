@@ -86,7 +86,6 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                                 onChange={(e) => setMobile(e.target.value)}
                             />
                         </div>
-                        <p className="field-subnote">Used for 1-tap WhatsApp expense reminders & split bills.</p>
                     </div>
 
                     <p className="modal-info-note">
