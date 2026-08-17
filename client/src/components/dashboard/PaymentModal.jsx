@@ -245,42 +245,45 @@ export default function PaymentModal({
         setLaunching(true);
 
         try {
-            let targetUri = "";
             const validAmount = num.toFixed(2);
-            const note = encodeURIComponent(description.trim() || "Kharchee Payment");
+            const note = description.trim() || "Kharchee Payment";
+            let targetVpa = "";
+            let targetName = activeFriend.name || "Friend";
 
-            // 1. If friend has a QR Code screenshot, scan and decode it automatically
+            // 1. If friend has a QR Code screenshot, scan and extract pure clean VPA & Name
             if (activeFriend.qrCode) {
                 const decodedData = await decodeQrFromImage(activeFriend.qrCode);
-                if (decodedData && (decodedData.startsWith("upi://") || decodedData.includes("pa="))) {
-                    targetUri = decodedData;
-                    // Append or update amount
-                    if (targetUri.includes("am=")) {
-                        targetUri = targetUri.replace(/am=[^&]*/, `am=${validAmount}`);
-                    } else {
-                        targetUri += `&am=${validAmount}`;
+                if (decodedData) {
+                    const paMatch = decodedData.match(/[?&]pa=([^&]+)/i);
+                    if (paMatch && paMatch[1]) {
+                        targetVpa = decodeURIComponent(paMatch[1]).trim();
                     }
-                    if (note && !targetUri.includes("tn=")) {
-                        targetUri += `&tn=${note}`;
-                    }
-                    if (!targetUri.includes("cu=")) {
-                        targetUri += `&cu=INR`;
+                    const pnMatch = decodedData.match(/[?&]pn=([^&]+)/i);
+                    if (pnMatch && pnMatch[1]) {
+                        targetName = decodeURIComponent(pnMatch[1]).trim();
                     }
                 }
             }
 
-            // 2. Fallback if decoded string is empty or no QR
-            if (!targetUri) {
-                const friendVpa = `${activeFriend.mobile}@upi`;
-                targetUri = `upi://pay?pa=${encodeURIComponent(friendVpa)}&pn=${encodeURIComponent(activeFriend.name)}&am=${validAmount}&cu=INR`;
-                if (note) targetUri += `&tn=${note}`;
+            // 2. Fallback to mobile number VPA
+            if (!targetVpa && activeFriend.mobile) {
+                targetVpa = `${activeFriend.mobile}@upi`;
             }
+
+            if (!targetVpa) {
+                setError("Unable to find friend's UPI payment address. Please upload their QR screenshot.");
+                setLaunching(false);
+                return;
+            }
+
+            // 3. Construct 100% clean RFC-compliant UPI 2.0 URL (no broken hashes/tampered signatures)
+            let targetUri = `upi://pay?pa=${encodeURIComponent(targetVpa)}&pn=${encodeURIComponent(targetName)}&am=${validAmount}&cu=INR&tn=${encodeURIComponent(note)}`;
 
             // Save state before translocating
             setLaunchedPayment({
                 friend: activeFriend,
                 amount: num,
-                description: description.trim(),
+                description: note,
                 platform: activeFriend.qrPlatform || "UPI"
             });
             setWaitingForReturn(true);
