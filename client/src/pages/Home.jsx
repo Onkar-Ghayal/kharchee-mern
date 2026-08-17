@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
+import { useAuth } from "../context/AuthContext";
 import "../styles/home.css";
 
 export default function Home() {
+    const { isLoggedIn } = useAuth();
+
     return (
         <div className="home-wrapper">
             <Header variant="public" />
@@ -24,9 +27,15 @@ export default function Home() {
                     </p>
 
                     <div className="hero-cta-group">
-                        <Link to="/register" className="btn-primary-cta">
-                            Get Started Free
-                        </Link>
+                        {isLoggedIn ? (
+                            <Link to="/dashboard" className="btn-primary-cta">
+                                Go to Dashboard ➔
+                            </Link>
+                        ) : (
+                            <Link to="/register" className="btn-primary-cta">
+                                Get Started Free
+                            </Link>
+                        )}
                         <a href="#how-it-works" className="btn-secondary-cta">
                             How It Works
                         </a>
@@ -309,9 +318,15 @@ export default function Home() {
                     <div className="cta-banner-card">
                         <h2>Start Tracking with Friends Today</h2>
                         <p>Join thousands who keep their everyday expenses simple, clear, and organized.</p>
-                        <Link to="/register" className="btn-white-cta">
-                            Create Free Account
-                        </Link>
+                        {isLoggedIn ? (
+                            <Link to="/dashboard" className="btn-white-cta">
+                                Go to Dashboard ➔
+                            </Link>
+                        ) : (
+                            <Link to="/register" className="btn-white-cta">
+                                Create Free Account
+                            </Link>
+                        )}
                     </div>
                 </div>
             </section>

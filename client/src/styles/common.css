@@ -274,6 +274,35 @@ a {
     box-shadow: 0 5px 16px rgba(99, 102, 241, 0.45);
 }
 
+.btn-nav-dashboard {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    padding: 0.55rem 1.15rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-nav-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+}
+
+.btn-nav-dashboard .nav-arrow-icon {
+    transition: transform 0.2s ease;
+}
+
+.btn-nav-dashboard:hover .nav-arrow-icon {
+    transform: translateX(3px);
+}
+
 .btn-nav-back {
     background: var(--bg-card);
     border: 1px solid var(--border-light);
