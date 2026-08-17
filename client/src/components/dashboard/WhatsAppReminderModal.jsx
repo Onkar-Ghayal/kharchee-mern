@@ -25,7 +25,8 @@ export default function WhatsAppReminderModal({
     open,
     friend,
     userName = "Friend",
-    onClose
+    onClose,
+    onOpenReceiptCard
 }) {
     const [selectedTemplate, setSelectedTemplate] = useState("friendly");
     const [customMessage, setCustomMessage] = useState("");
@@ -141,6 +142,22 @@ export default function WhatsAppReminderModal({
                     </div>
                 </div>
 
+                {/* Visual Receipt Card Shortcut */}
+                {onOpenReceiptCard && (
+                    <div style={{ marginBottom: "1rem" }}>
+                        <button
+                            type="button"
+                            className="btn-open-receipt-card"
+                            onClick={() => {
+                                onClose();
+                                onOpenReceiptCard(friend);
+                            }}
+                        >
+                            <span>🖼️ Generate & Share Visual Receipt Slip</span>
+                        </button>
+                    </div>
+                )}
+
                 {/* Actions */}
                 <div className="reminder-modal-footer">
                     <button
@@ -148,7 +165,7 @@ export default function WhatsAppReminderModal({
                         className="btn-send-whatsapp"
                         onClick={handleSendWhatsApp}
                     >
-                        <span>Send on WhatsApp</span>
+                        <span>Send Text on WhatsApp</span>
                         <span className="btn-wa-arrow">↗</span>
                     </button>
                     <button type="button" className="btn-reminder-cancel" onClick={onClose}>

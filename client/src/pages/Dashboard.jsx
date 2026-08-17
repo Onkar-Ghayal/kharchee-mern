@@ -14,6 +14,7 @@ import SettleModal from "../components/dashboard/SettleModal";
 import WhatsAppReminderModal from "../components/dashboard/WhatsAppReminderModal";
 import OnboardingTourModal from "../components/dashboard/OnboardingTourModal";
 import SplitBillModal from "../components/dashboard/SplitBillModal";
+import ReceiptCardModal from "../components/dashboard/ReceiptCardModal";
 
 import "../styles/dashboard.css";
 import "../styles/auth.css";
@@ -71,6 +72,7 @@ export default function Dashboard() {
     const [reminderOpen, setReminderOpen] = useState(false);
     const [tourOpen, setTourOpen] = useState(false);
     const [splitBillOpen, setSplitBillOpen] = useState(false);
+    const [receiptCardOpen, setReceiptCardOpen] = useState(false);
     const [filterMenuOpen, setFilterMenuOpen] = useState(false);
     const filterMenuRef = useRef(null);
 
@@ -289,6 +291,12 @@ export default function Dashboard() {
     const openReminderModal = (friend) => {
         setActiveFriend(friend);
         setReminderOpen(true);
+    };
+
+    /* ================= VISUAL RECEIPT SLIP ================= */
+    const openReceiptCardModal = (friend) => {
+        setActiveFriend(friend);
+        setReceiptCardOpen(true);
     };
 
     /* ================= DELETE ================= */
@@ -527,6 +535,7 @@ export default function Dashboard() {
                             onSettle={openSettle}
                             onCalculate={openCalculator}
                             onEdit={openEditModal}
+                            onReceipt={openReceiptCardModal}
                             onHistory={openHistory}
                             onDelete={openDelete}
                         />
@@ -585,6 +594,7 @@ export default function Dashboard() {
                 friend={activeFriend}
                 userName={user?.name || "Friend"}
                 onClose={() => setReminderOpen(false)}
+                onOpenReceiptCard={openReceiptCardModal}
             />
 
             {/* 9. First-Time Guided Onboarding Tour Modal */}
@@ -615,6 +625,14 @@ export default function Dashboard() {
                 friends={allFriends}
                 onClose={() => setSplitBillOpen(false)}
                 onSubmit={handleSplitBillSubmit}
+            />
+
+            {/* 13. Visual Receipt Slip Modal */}
+            <ReceiptCardModal
+                open={receiptCardOpen}
+                friend={allFriends.find((f) => f._id === activeFriend?._id) || activeFriend}
+                userName={user?.name || "User"}
+                onClose={() => setReceiptCardOpen(false)}
             />
         </>
     );
