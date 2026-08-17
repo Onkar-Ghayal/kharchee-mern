@@ -38,23 +38,17 @@ export function drawReceiptCard(canvas, { friend, userName = "User", theme = "da
         minute: "2-digit"
     });
 
-    // Helper: Rounded Rectangle (Native with fallback)
+    // Helper: Rounded Rectangle (Standard 5 arguments for arcTo)
     function roundRect(ctx, x, y, w, h, r, fill = true, stroke = false) {
-        if (typeof ctx.roundRect === "function") {
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, r);
-            ctx.closePath();
-        } else {
-            if (w < 2 * r) r = w / 2;
-            if (h < 2 * r) r = h / 2;
-            ctx.beginPath();
-            ctx.moveTo(x + r, y);
-            ctx.arcTo(x + w, y, x + w, y + h, r);
-            ctx.arcTo(x + w, y + h, x, y + h, r);
-            ctx.arcTo(x, y + h, x, y, r);
-            ctx.arcTo(x, y, x + w, y, r);
-            ctx.closePath();
-        }
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
         if (fill) ctx.fill();
         if (stroke) ctx.stroke();
     }
