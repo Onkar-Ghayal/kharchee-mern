@@ -57,6 +57,19 @@ const friendSchema = new mongoose.Schema(
             trim: true,
             default: "Google Pay"
         },
+        qrCode: {
+            type: String,
+            default: ""
+        },
+        qrRequestStatus: {
+            type: String,
+            enum: ["not_requested", "pending", "uploaded"],
+            default: "not_requested"
+        },
+        qrRequestedAt: {
+            type: Date,
+            default: null
+        },
         currentAmount: {
             type: Number,
             default: 0

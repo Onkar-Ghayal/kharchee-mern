@@ -1,20 +1,23 @@
 import { useState, useEffect, useMemo } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import api from "../../api/axios";
 
 export default function PaymentModal({
     open,
     friends = [],
     preselectedFriend,
     onClose,
-    onPaymentSuccess
+    onPaymentSuccess,
+    onFriendUpdated
 }) {
     const [selectedFriendId, setSelectedFriendId] = useState("");
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("");
-    const [paymentTab, setPaymentTab] = useState("upi"); // 'upi' | 'qr'
+    const [paymentTab, setPaymentTab] = useState("friend_qr"); // 'friend_qr' | 'dynamic_qr' | 'upi_apps'
     const [recording, setRecording] = useState(false);
     const [copied, setCopied] = useState("");
     const [error, setError] = useState("");
+    const [uploadingQr, setUploadingQr] = useState(false);
 
     // Return from UPI App verification state
     const [waitingForReturn, setWaitingForReturn] = useState(false);
@@ -45,7 +48,7 @@ export default function PaymentModal({
         setDescription("");
         setError("");
         setCopied("");
-        setPaymentTab("upi");
+        setPaymentTab("friend_qr");
         setWaitingForReturn(false);
         setLaunchedPayment(null);
         setShowReturnConfirm(false);
@@ -83,7 +86,7 @@ export default function PaymentModal({
     const isOwed = activeFriend && activeFriend.currentAmount < 0;
     const isDue = activeFriend && activeFriend.currentAmount > 0;
 
-    // Construct UPI String
+    // Dynamic UPI String fallback
     const upiString = useMemo(() => {
         if (!activeFriend) return "";
         const targetVpa = activeFriend.upiId || (activeFriend.mobile ? `${activeFriend.mobile}@upi` : "");
@@ -107,8 +110,82 @@ export default function PaymentModal({
         setTimeout(() => setCopied(""), 2500);
     };
 
-    // Launch UPI App
-    const handleLaunchUpi = (appType = "generic") => {
+    // Send / Re-send QR Code Request to Friend via WhatsApp
+    const handleSendWhatsAppQrRequest = async () => {
+        if (!activeFriend) return;
+        try {
+            const baseUrl = window.location.origin;
+            const uploadUrl = `${baseUrl}/upload-qr/${activeFriend._id}`;
+            const message = `Hey ${activeFriend.name}! Please upload your PhonePe / Google Pay / Paytm QR code screenshot so I can pay you directly on Kharchee: ${uploadUrl}`;
+            const waUrl = `https://wa.me/91${activeFriend.mobile}?text=${encodeURIComponent(message)}`;
+
+            // Mark as pending on server
+            await api.put(`/friends/${activeFriend._id}/qr-status`, { status: "pending" });
+            if (onFriendUpdated) onFriendUpdated();
+
+            window.open(waUrl, "_blank");
+        } catch (err) {
+            console.error("QR status update error:", err);
+        }
+    };
+
+    // Upload QR Code Directly from Modal
+    const handleDirectQrUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeFriend) return;
+
+        if (!file.type.startsWith("image/")) {
+            setError("Please select an image file (PNG, JPG, WEBP)");
+            return;
+        }
+
+        setUploadingQr(true);
+        const reader = new FileReader();
+        reader.onload = async (readerEvent) => {
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+                const maxDim = 800;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+
+                try {
+                    await api.put(`/friends/${activeFriend._id}`, {
+                        qrCode: compressedBase64,
+                        qrRequestStatus: "uploaded"
+                    });
+                    if (onFriendUpdated) onFriendUpdated();
+                    setError("");
+                } catch (err) {
+                    setError("Failed to save QR code");
+                } finally {
+                    setUploadingQr(false);
+                }
+            };
+            img.src = readerEvent.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Launch UPI App directly
+    const handleLaunchUpi = () => {
         setError("");
 
         const num = Number(amount);
@@ -124,7 +201,7 @@ export default function PaymentModal({
 
         const targetVpa = activeFriend.upiId || (activeFriend.mobile ? `${activeFriend.mobile}@upi` : "");
         if (!targetVpa) {
-            setError("No UPI ID found for this friend. Please add their UPI ID first.");
+            setError("No UPI ID found. Please ask friend to upload QR or provide UPI ID.");
             return;
         }
 
@@ -134,19 +211,16 @@ export default function PaymentModal({
         let finalUri = `upi://pay?pa=${encodeURIComponent(targetVpa)}&pn=${encodeURIComponent(activeFriend.name)}&cu=INR&am=${validAmount}`;
         if (note) finalUri += `&tn=${note}`;
 
-        // Save state before leaving app
         setLaunchedPayment({
             friend: activeFriend,
             amount: num,
             description: description.trim(),
-            upiApp: appType === "generic" ? (activeFriend.upiApp || "UPI") : appType
+            upiApp: activeFriend.upiApp || "UPI"
         });
         setWaitingForReturn(true);
 
-        // Open UPI App
         window.location.href = finalUri;
 
-        // Fallback popup if browser does not fire visibilitychange immediately
         setTimeout(() => {
             setShowReturnConfirm(true);
         }, 2200);
@@ -199,7 +273,7 @@ export default function PaymentModal({
     return (
         <div className="modal" style={{ display: "flex" }}>
             <div className="modal-content professional-pay-card">
-                {/* 1. Return from UPI Status Confirmation Modal (Popup Verification) */}
+                {/* 1. Return from UPI Status Confirmation */}
                 {showReturnConfirm && launchedPayment ? (
                     <div className="payment-return-verify-card">
                         <div className="verify-badge-icon">
@@ -255,7 +329,7 @@ export default function PaymentModal({
                                 </div>
                                 <div>
                                     <h3>Pay Friend</h3>
-                                    <p className="pay-header-sub">UPI Deep-Link, QR Code & 1-Tap Transfer</p>
+                                    <p className="pay-header-sub">Scan QR Code, 1-Tap UPI & Settle</p>
                                 </div>
                             </div>
                             <button type="button" className="btn-close-pay-modal" onClick={onClose} aria-label="Close">
@@ -263,7 +337,7 @@ export default function PaymentModal({
                             </button>
                         </div>
 
-                        {/* Recipient Context Card */}
+                        {/* Recipient Summary Card */}
                         {activeFriend && (
                             <div className={`recipient-summary-box ${isOwed ? "status-owed" : isDue ? "status-due" : "status-settled"}`}>
                                 <div className="recipient-avatar">
@@ -305,7 +379,7 @@ export default function PaymentModal({
                             </div>
                         )}
 
-                        {/* Amount & Note Input Section */}
+                        {/* Amount & Presets */}
                         <div className="pay-form-section">
                             <label className="pay-form-label">Amount (₹) *</label>
                             <div className="pay-amount-input-box">
@@ -322,7 +396,6 @@ export default function PaymentModal({
                                 />
                             </div>
 
-                            {/* Quick Presets */}
                             <div className="pay-quick-presets">
                                 <button type="button" onClick={() => setAmount("50")}>+₹50</button>
                                 <button type="button" onClick={() => setAmount("100")}>+₹100</button>
@@ -340,89 +413,109 @@ export default function PaymentModal({
                             </div>
                         </div>
 
-                        {/* Note / Description */}
+                        {/* Note / Reason */}
                         <div className="pay-form-section">
                             <label className="pay-form-label">Note / Reason (Optional)</label>
                             <input
                                 type="text"
                                 className="pay-description-input"
-                                placeholder="e.g. Dinner share, Chai, Cab, Rent"
+                                placeholder="e.g. Dinner share, Chai, Movie, Flat rent"
                                 value={description}
                                 maxLength={100}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
                         </div>
 
-                        {/* Payment Mode Selector (UPI Launch vs QR Code) */}
-                        <div className="payment-mode-tabs">
-                            <button
-                                type="button"
-                                className={`pay-mode-tab-btn ${paymentTab === "upi" ? "active" : ""}`}
-                                onClick={() => setPaymentTab("upi")}
-                            >
-                                📱 1-Tap UPI Apps
-                            </button>
-                            <button
-                                type="button"
-                                className={`pay-mode-tab-btn ${paymentTab === "qr" ? "active" : ""}`}
-                                onClick={() => setPaymentTab("qr")}
-                            >
-                                📸 Scan & Pay QR Code
-                            </button>
-                        </div>
+                        {/* QR CODE SECTION (Friend's Uploaded QR vs Request Pending vs App Deep Link) */}
+                        <div className="pay-qr-display-section">
+                            {activeFriend?.qrCode ? (
+                                /* Friend Has Uploaded Their Official QR Code */
+                                <div className="friend-official-qr-card">
+                                    <div className="qr-badge-header">
+                                        <span className="qr-status-pill green">✓ Official QR Code</span>
+                                        <label className="btn-reupload-qr-label" htmlFor="pay-qr-reupload">
+                                            <span>Change QR</span>
+                                            <input
+                                                id="pay-qr-reupload"
+                                                type="file"
+                                                accept="image/*"
+                                                className="file-hidden-input"
+                                                onChange={handleDirectQrUpload}
+                                            />
+                                        </label>
+                                    </div>
 
-                        {/* TAB 1: 1-Tap UPI Launch */}
-                        {paymentTab === "upi" ? (
-                            <div className="payment-tab-content">
-                                <div className="direct-upi-launch-box">
-                                    <button
-                                        type="button"
-                                        className="btn-launch-mobile-upi primary-upi-btn"
-                                        disabled={!Number(amount)}
-                                        onClick={() => handleLaunchUpi("generic")}
-                                    >
-                                        🚀 Open PhonePe / GPay / Paytm
-                                    </button>
-                                </div>
+                                    <div className="friend-qr-frame">
+                                        <img src={activeFriend.qrCode} alt="Payment QR" className="friend-qr-image" />
+                                    </div>
 
-                                {/* Security Guidance Note */}
-                                <div className="upi-security-note-box">
-                                    <div className="security-note-icon">🛡️</div>
-                                    <div className="security-note-text">
-                                        <strong>PhonePe / GPay Security Notice:</strong>
-                                        <p>
-                                            If your UPI app declines browser links, tap <strong>Scan & Pay QR Code</strong> above or copy the <strong>UPI ID / Mobile Number</strong> and paste directly in your UPI app.
-                                        </p>
+                                    <div className="qr-scan-instruction">
+                                        <strong>Scan with PhonePe, Google Pay, or Paytm</strong>
+                                        <p>Amount to send: <strong>₹{Number(amount) > 0 ? Number(amount).toLocaleString("en-IN") : "0"}</strong></p>
                                     </div>
                                 </div>
-                            </div>
-                        ) : (
-                            /* TAB 2: Dynamic Live QR Code */
-                            <div className="payment-tab-content qr-tab-content">
-                                <div className="dynamic-qr-container">
-                                    {upiString ? (
-                                        <div className="qr-code-box">
-                                            <QRCodeSVG
-                                                value={upiString}
-                                                size={160}
-                                                level="H"
-                                                includeMargin={true}
-                                                bgColor="#ffffff"
-                                                fgColor="#0f172a"
+                            ) : activeFriend?.qrRequestStatus === "pending" ? (
+                                /* QR Request is Pending from WhatsApp */
+                                <div className="qr-status-card pending-card">
+                                    <div className="qr-status-icon-wrap">⏳</div>
+                                    <h4>QR Code Request Pending</h4>
+                                    <p>
+                                        You sent a request to <strong>{activeFriend.name}</strong> on WhatsApp. Waiting for them to upload their QR screenshot.
+                                    </p>
+
+                                    <div className="qr-pending-actions">
+                                        <button
+                                            type="button"
+                                            className="btn-whatsapp-action"
+                                            onClick={handleSendWhatsAppQrRequest}
+                                        >
+                                            📲 Re-send WhatsApp Link
+                                        </button>
+
+                                        <label className="btn-upload-myself-action" htmlFor="pay-qr-upload-myself">
+                                            <span>{uploadingQr ? "Uploading..." : "📸 Upload QR Myself"}</span>
+                                            <input
+                                                id="pay-qr-upload-myself"
+                                                type="file"
+                                                accept="image/*"
+                                                className="file-hidden-input"
+                                                onChange={handleDirectQrUpload}
                                             />
-                                            <div className="qr-code-caption">
-                                                <span className="qr-pay-amount">₹{Number(amount) > 0 ? Number(amount).toLocaleString("en-IN") : "0"}</span>
-                                                <span className="qr-pay-recipient">Scan with PhonePe, Google Pay, Paytm, or BHIM</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="qr-placeholder-box">
-                                            <p>Please enter an amount above to generate the payment QR code</p>
-                                        </div>
-                                    )}
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                /* No QR Code Uploaded Yet */
+                                <div className="qr-status-card not-uploaded-card">
+                                    <div className="qr-status-icon-wrap">📸</div>
+                                    <h4>No QR Code Added Yet</h4>
+                                    <p>
+                                        Send a 1-tap WhatsApp link to <strong>{activeFriend?.name}</strong> so they can upload their PhonePe/GPay QR, or upload their screenshot yourself!
+                                    </p>
+
+                                    <div className="qr-pending-actions">
+                                        <button
+                                            type="button"
+                                            className="btn-whatsapp-action"
+                                            onClick={handleSendWhatsAppQrRequest}
+                                        >
+                                            📲 Request QR on WhatsApp
+                                        </button>
+
+                                        <label className="btn-upload-myself-action" htmlFor="pay-qr-upload-initial">
+                                            <span>{uploadingQr ? "Uploading..." : "📸 Upload QR Myself"}</span>
+                                            <input
+                                                id="pay-qr-upload-initial"
+                                                type="file"
+                                                accept="image/*"
+                                                className="file-hidden-input"
+                                                onChange={handleDirectQrUpload}
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {error && <p className="form-error pay-error-banner">{error}</p>}
 
@@ -436,6 +529,7 @@ export default function PaymentModal({
                             >
                                 {recording ? "Updating Ledger..." : "✓ Mark as Paid & Update Ledger"}
                             </button>
+
                             <button type="button" className="btn-pay-cancel" onClick={onClose}>
                                 Cancel
                             </button>

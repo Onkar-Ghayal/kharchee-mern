@@ -12,6 +12,8 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
     const [mobile, setMobile] = useState("");
     const [upiId, setUpiId] = useState("");
     const [upiApp, setUpiApp] = useState("Google Pay");
+    const [qrCode, setQrCode] = useState("");
+    const [sendWhatsAppRequest, setSendWhatsAppRequest] = useState(false);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -22,16 +24,64 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
             setMobile(editingFriend.mobile || "");
             setUpiId(editingFriend.upiId || "");
             setUpiApp(editingFriend.upiApp || "Google Pay");
+            setQrCode(editingFriend.qrCode || "");
+            setSendWhatsAppRequest(false);
         } else {
             setName("");
             setMobile("");
             setUpiId("");
             setUpiApp("Google Pay");
+            setQrCode("");
+            setSendWhatsAppRequest(false);
         }
         setError("");
     }, [open, editingFriend]);
 
     if (!open) return null;
+
+    // Handle QR code file selection & compression
+    const handleQrUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            setError("Please upload an image file (PNG, JPG, WEBP)");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (readerEvent) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+                const maxDim = 800;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+                setQrCode(compressedBase64);
+                setSendWhatsAppRequest(false);
+                setError("");
+            };
+            img.src = readerEvent.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
 
     const handleSave = (e) => {
         e.preventDefault();
@@ -65,7 +115,10 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
             name: trimmedName,
             mobile: trimmedMobile,
             upiId: trimmedUpi,
-            upiApp
+            upiApp,
+            qrCode,
+            qrRequestStatus: qrCode ? "uploaded" : sendWhatsAppRequest ? "pending" : (editingFriend?.qrRequestStatus || "not_requested"),
+            sendWhatsAppRequest
         });
     };
 
@@ -109,7 +162,54 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                         </div>
                     </div>
 
-                    {/* 3. UPI ID (Optional) */}
+                    {/* 3. QR Code Upload or WhatsApp Request (Optional) */}
+                    <div className="form-group">
+                        <div className="form-label-row">
+                            <label>Payment QR Code <span className="optional-tag">(Optional)</span></label>
+                        </div>
+
+                        {qrCode ? (
+                            <div className="modal-qr-preview-box">
+                                <img src={qrCode} alt="Friend QR" className="modal-qr-thumb" />
+                                <div className="modal-qr-meta">
+                                    <span className="qr-attached-label">✓ QR Code Attached</span>
+                                    <button
+                                        type="button"
+                                        className="btn-remove-qr-thumb"
+                                        onClick={() => setQrCode("")}
+                                    >
+                                        Remove QR
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="qr-choice-options-wrapper">
+                                <label className="btn-upload-qr-file" htmlFor="friend-qr-file">
+                                    <span>📸 Upload QR Screenshot</span>
+                                    <input
+                                        id="friend-qr-file"
+                                        type="file"
+                                        accept="image/*"
+                                        className="file-hidden-input"
+                                        onChange={handleQrUpload}
+                                    />
+                                </label>
+
+                                {!editingFriend && (
+                                    <label className="checkbox-qr-request-row">
+                                        <input
+                                            type="checkbox"
+                                            checked={sendWhatsAppRequest}
+                                            onChange={(e) => setSendWhatsAppRequest(e.target.checked)}
+                                        />
+                                        <span>📲 Send QR Code Request via WhatsApp after saving</span>
+                                    </label>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 4. UPI ID (Optional fallback) */}
                     <div className="form-group">
                         <div className="form-label-row">
                             <label>UPI ID <span className="optional-tag">(Optional)</span></label>
@@ -122,7 +222,7 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                         />
                     </div>
 
-                    {/* 4. Select App Platform */}
+                    {/* 5. Select App Platform */}
                     <div className="form-group">
                         <label>UPI Platform / App <span className="optional-tag">(Optional)</span></label>
                         <div className="upi-app-selector-grid">
@@ -136,13 +236,6 @@ export default function AddFriendModal({ open, editingFriend, onClose, onSubmit 
                                     <span>{app.label}</span>
                                 </button>
                             ))}
-                        </div>
-
-                        {/* Direct Note */}
-                        <div className="upi-direct-note-banner">
-                            <p>
-                                <strong>Note:</strong> Enter your friend's UPI ID if you want to pay them directly from Kharchee via Google Pay / PhonePe.
-                            </p>
                         </div>
                     </div>
 

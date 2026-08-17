@@ -1,11 +1,11 @@
 const Friend = require("../models/Friend");
 
 /* ==========================================================================
-   1. ADD FRIEND (Name & Mobile/UPI ID - default balance 0)
+   1. ADD FRIEND (Name, Mobile, optional QR Code & UPI ID)
    ========================================================================== */
 exports.addFriend = async (req, res) => {
     try {
-        const { name, mobile, upiId, upiApp } = req.body;
+        const { name, mobile, upiId, upiApp, qrCode, qrRequestStatus, qrRequestedAt } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({ message: "Friend name is required" });
@@ -21,6 +21,9 @@ exports.addFriend = async (req, res) => {
             mobile: mobile.trim(),
             upiId: upiId ? upiId.trim() : "",
             upiApp: upiApp ? upiApp.trim() : "Google Pay",
+            qrCode: qrCode || "",
+            qrRequestStatus: qrRequestStatus || "not_requested",
+            qrRequestedAt: qrRequestedAt ? new Date(qrRequestedAt) : null,
             currentAmount: 0,
             history: []
         });
@@ -48,11 +51,11 @@ exports.getFriends = async (req, res) => {
 };
 
 /* ==========================================================================
-   3. EDIT FRIEND DETAILS (Name, Mobile, UPI ID, UPI App)
+   3. EDIT FRIEND DETAILS (Name, Mobile, UPI ID, UPI App, QR Code)
    ========================================================================== */
 exports.updateFriend = async (req, res) => {
     try {
-        const { name, mobile, upiId, upiApp } = req.body;
+        const { name, mobile, upiId, upiApp, qrCode, qrRequestStatus, qrRequestedAt } = req.body;
         const friend = await Friend.findOne({ _id: req.params.id, user: req.user._id });
 
         if (!friend) {
@@ -63,6 +66,12 @@ exports.updateFriend = async (req, res) => {
         if (typeof mobile !== "undefined") friend.mobile = mobile.trim();
         if (typeof upiId !== "undefined") friend.upiId = upiId.trim();
         if (typeof upiApp !== "undefined") friend.upiApp = upiApp.trim();
+        if (typeof qrCode !== "undefined") {
+            friend.qrCode = qrCode;
+            if (qrCode) friend.qrRequestStatus = "uploaded";
+        }
+        if (typeof qrRequestStatus !== "undefined") friend.qrRequestStatus = qrRequestStatus;
+        if (typeof qrRequestedAt !== "undefined") friend.qrRequestedAt = qrRequestedAt;
 
         await friend.save();
         res.json(friend);
@@ -345,3 +354,80 @@ exports.splitBill = async (req, res) => {
         res.status(500).json({ message: "Server error splitting group bill" });
     }
 };
+
+/* ==========================================================================
+   11. GET PUBLIC FRIEND QR INFO (For Friend Upload Page)
+   ========================================================================== */
+exports.getPublicFriendQr = async (req, res) => {
+    try {
+        const friend = await Friend.findById(req.params.id).populate("user", "name email");
+        if (!friend) {
+            return res.status(404).json({ message: "Invalid or expired payment link" });
+        }
+
+        res.json({
+            friendId: friend._id,
+            friendName: friend.name,
+            requestedBy: friend.user ? friend.user.name : "Your Friend",
+            qrCode: friend.qrCode || "",
+            qrRequestStatus: friend.qrRequestStatus || "not_requested",
+            upiId: friend.upiId || "",
+            upiApp: friend.upiApp || "Google Pay"
+        });
+    } catch (error) {
+        console.error("Get public QR error:", error);
+        res.status(500).json({ message: "Server error fetching QR info" });
+    }
+};
+
+/* ==========================================================================
+   12. UPLOAD PUBLIC FRIEND QR (By Friend on WhatsApp Link)
+   ========================================================================== */
+exports.uploadPublicFriendQr = async (req, res) => {
+    try {
+        const { qrCode, upiId, upiApp } = req.body;
+
+        if (!qrCode && !upiId) {
+            return res.status(400).json({ message: "Please upload a QR code image or enter a UPI ID" });
+        }
+
+        const friend = await Friend.findById(req.params.id);
+        if (!friend) {
+            return res.status(404).json({ message: "Friend record not found" });
+        }
+
+        if (qrCode) friend.qrCode = qrCode;
+        if (upiId) friend.upiId = upiId.trim();
+        if (upiApp) friend.upiApp = upiApp;
+        friend.qrRequestStatus = "uploaded";
+
+        await friend.save();
+        res.json({ message: "QR Code uploaded successfully!", qrCode: friend.qrCode });
+    } catch (error) {
+        console.error("Upload public QR error:", error);
+        res.status(500).json({ message: "Server error uploading QR code" });
+    }
+};
+
+/* ==========================================================================
+   13. UPDATE QR REQUEST STATUS (Sent WhatsApp Request)
+   ========================================================================== */
+exports.updateQrStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        const friend = await Friend.findOne({ _id: req.params.id, user: req.user._id });
+        if (!friend) {
+            return res.status(404).json({ message: "Friend not found" });
+        }
+
+        friend.qrRequestStatus = status || "pending";
+        if (status === "pending") {
+            friend.qrRequestedAt = new Date();
+        }
+        await friend.save();
+        res.json(friend);
+    } catch (error) {
+        res.status(500).json({ message: "Server error updating QR request status" });
+    }
+};
+

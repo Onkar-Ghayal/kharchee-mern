@@ -210,13 +210,36 @@ export default function Dashboard() {
         setAddModalOpen(true);
     };
 
-    const handleAddFriendSubmit = async ({ name, mobile, upiId, upiApp }) => {
+    const handleAddFriendSubmit = async ({ name, mobile, upiId, upiApp, qrCode, qrRequestStatus, sendWhatsAppRequest }) => {
         try {
             if (!editingFriend) {
-                await api.post("/friends", { name, mobile, upiId, upiApp });
+                const res = await api.post("/friends", {
+                    name,
+                    mobile,
+                    upiId,
+                    upiApp,
+                    qrCode,
+                    qrRequestStatus
+                });
                 showToast("Friend added successfully with ₹0 balance", "success");
+
+                // If user chose to send QR request via WhatsApp at add time:
+                if (sendWhatsAppRequest && res.data && res.data._id) {
+                    const baseUrl = window.location.origin;
+                    const uploadUrl = `${baseUrl}/upload-qr/${res.data._id}`;
+                    const message = `Hey ${name}! Please upload your PhonePe / Google Pay / Paytm QR code screenshot so I can pay you directly on Kharchee: ${uploadUrl}`;
+                    const waUrl = `https://wa.me/91${mobile}?text=${encodeURIComponent(message)}`;
+                    window.open(waUrl, "_blank");
+                }
             } else {
-                await api.put(`/friends/${editingFriend._id}`, { name, mobile, upiId, upiApp });
+                await api.put(`/friends/${editingFriend._id}`, {
+                    name,
+                    mobile,
+                    upiId,
+                    upiApp,
+                    qrCode,
+                    qrRequestStatus
+                });
                 showToast("Friend details updated", "info");
             }
             setAddModalOpen(false);
@@ -226,21 +249,8 @@ export default function Dashboard() {
         }
     };
 
-    /* ================= PAYMENT (UPI / GPay / PhonePe) ================= */
+    /* ================= PAYMENT (QR Code / UPI / Ledger Settle) ================= */
     const openPaymentModal = (friend = null) => {
-        // Laptop / Desktop Check: UPI apps require mobile device
-        if (!isMobileDevice()) {
-            setActiveFriend(friend);
-            setDesktopWarningOpen(true);
-            return;
-        }
-
-        // If clicking Pay on a specific friend and they don't have a UPI ID set yet
-        if (friend && (!friend.upiId || !friend.upiId.trim())) {
-            setPendingPayFriend(friend);
-            setSetupUpiOpen(true);
-            return;
-        }
         setActiveFriend(friend);
         setPaymentModalOpen(true);
     };
@@ -602,6 +612,7 @@ export default function Dashboard() {
                 preselectedFriend={activeFriend}
                 onClose={() => setPaymentModalOpen(false)}
                 onPaymentSuccess={handlePaymentSubmit}
+                onFriendUpdated={fetchFriends}
             />
 
             {/* 3. Setup UPI Modal (Prompt when clicking Pay on friend without UPI) */}

@@ -21,7 +21,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             localStorage.removeItem("token");
-            if (window.location.pathname !== "/login") {
+            if (window.location.pathname !== "/login" && !window.location.pathname.startsWith("/upload-qr")) {
                 window.location.href = "/login";
             }
         }

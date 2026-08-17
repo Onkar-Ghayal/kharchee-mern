@@ -1526,33 +1526,298 @@
     color: var(--text-tertiary);
 }
 
-/* Security Note Box */
-.upi-security-note-box {
+/* -------------------- FRIEND CARD QR BADGE -------------------- */
+.friend-name-row {
     display: flex;
-    gap: 0.65rem;
-    padding: 0.75rem 0.85rem;
-    background: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: 10px;
-    margin-top: 0.75rem;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.friend-qr-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.12rem 0.45rem;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+}
+
+.friend-qr-tag.uploaded {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.friend-qr-tag.pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* -------------------- ADD FRIEND MODAL QR CONTROLS -------------------- */
+.modal-qr-preview-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-light);
+    border-radius: 12px;
+}
+
+.modal-qr-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 2px;
+    border: 1px solid var(--border-light);
+}
+
+.modal-qr-meta {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qr-attached-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.btn-remove-qr-thumb {
+    background: none;
+    border: none;
+    color: #ef4444;
     font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+}
+
+.btn-remove-qr-thumb:hover {
+    text-decoration: underline;
+}
+
+.qr-choice-options-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.btn-upload-qr-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    background: var(--bg-secondary);
+    border: 1.5px dashed var(--accent-primary);
+    border-radius: 10px;
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-upload-qr-file:hover {
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.checkbox-qr-request-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.775rem;
+    font-weight: 600;
     color: var(--text-secondary);
-    line-height: 1.45;
+    cursor: pointer;
 }
 
-.security-note-icon {
-    font-size: 1rem;
-    flex-shrink: 0;
+.checkbox-qr-request-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: #22c55e;
 }
 
-.security-note-text strong {
+/* -------------------- PAYMENT MODAL OFFICIAL QR & REQUEST STATES -------------------- */
+.pay-qr-display-section {
+    margin: 0.85rem 0 1rem 0;
+}
+
+.friend-official-qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.15rem 1rem;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border: 1.5px solid var(--border-light);
+    text-align: center;
+}
+
+.dark-mode .friend-official-qr-card {
+    background: #111827;
+    border-color: #374151;
+}
+
+.qr-badge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+.qr-status-pill {
+    font-size: 0.725rem;
+    font-weight: 800;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+}
+
+.qr-status-pill.green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.btn-reupload-qr-label {
+    font-size: 0.725rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    cursor: pointer;
+}
+
+.friend-qr-frame {
+    padding: 8px;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.friend-qr-image {
+    max-width: 180px;
+    max-height: 180px;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+}
+
+.qr-scan-instruction {
+    margin-top: 0.75rem;
+    font-size: 0.775rem;
+    color: var(--text-secondary);
+}
+
+.qr-scan-instruction strong {
     color: var(--text-primary);
     display: block;
     margin-bottom: 0.15rem;
 }
 
-.security-note-text p {
+.qr-scan-instruction p {
     margin: 0;
+}
+
+/* QR Status Cards (Pending & Not Uploaded) */
+.qr-status-card {
+    padding: 1.15rem 1rem;
+    border-radius: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.qr-status-card.pending-card {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1.5px dashed rgba(245, 158, 11, 0.35);
+}
+
+.qr-status-card.not-uploaded-card {
+    background: var(--bg-secondary);
+    border: 1.5px dashed var(--border-light);
+}
+
+.qr-status-icon-wrap {
+    font-size: 2rem;
+    margin-bottom: 0.35rem;
+}
+
+.qr-status-card h4 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin: 0 0 0.35rem 0;
+    color: var(--text-primary);
+}
+
+.qr-status-card p {
+    font-size: 0.775rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin: 0 0 1rem 0;
+    max-width: 320px;
+}
+
+.qr-pending-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    width: 100%;
+}
+
+.btn-whatsapp-action {
+    width: 100%;
+    height: 42px;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    box-shadow: 0 3px 12px rgba(34, 197, 94, 0.35);
+    transition: all 0.15s ease;
+}
+
+.btn-whatsapp-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 16px rgba(34, 197, 94, 0.5);
+}
+
+.btn-upload-myself-action {
+    width: 100%;
+    height: 38px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-light);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+}
+
+.btn-upload-myself-action:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
 }
 
 /* Footer Actions */
