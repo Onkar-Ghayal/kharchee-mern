@@ -1,48 +1,145 @@
+const https = require("https");
 const nodemailer = require("nodemailer");
 const dns = require("dns");
 
-// Force IPv4 resolution to prevent IPv6 ENETUNREACH errors on cloud hosts like Render
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder("ipv4first");
 }
 
 /**
- * Helper to build sanitized Gmail SMTP Transporter
- * Forces IPv4 (family: 4) and Port 587 STARTTLS for 100% reliable cloud delivery.
+ * Send email via Resend HTTP API (Port 443 HTTPS - 100% unblocked on Render)
  */
-function getTransporter() {
-    const emailUser = (process.env.EMAIL_USER || "").trim();
-    // Strip everything except alphanumeric characters (App Password is 16 letters)
-    const emailPass = (process.env.EMAIL_PASS || "").replace(/[^a-zA-Z0-9]/g, "").trim();
+function sendViaResend(apiKey, toEmail, subject, text, html) {
+    const payload = JSON.stringify({
+        from: process.env.RESEND_FROM || "Kharchee <onboarding@resend.dev>",
+        to: [toEmail],
+        subject: subject,
+        text: text,
+        html: html
+    });
 
-    if (!emailUser || !emailPass) {
-        return null;
-    }
+    return new Promise((resolve, reject) => {
+        const req = https.request(
+            {
+                hostname: "api.resend.com",
+                port: 443,
+                path: "/emails",
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${apiKey.trim()}`,
+                    "Content-Type": "application/json",
+                    "Content-Length": Buffer.byteLength(payload)
+                },
+                timeout: 10000
+            },
+            (res) => {
+                let body = "";
+                res.on("data", (chunk) => (body += chunk));
+                res.on("end", () => {
+                    try {
+                        const data = JSON.parse(body);
+                        if (res.statusCode >= 200 && res.statusCode < 300) {
+                            resolve({ success: true, messageId: data.id, provider: "resend" });
+                        } else {
+                            reject(new Error(data.message || body));
+                        }
+                    } catch (e) {
+                        reject(new Error(body));
+                    }
+                });
+            }
+        );
 
-    return nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // STARTTLS
-        requireTLS: true,
-        auth: {
-            user: emailUser,
-            pass: emailPass
-        },
-        tls: {
-            rejectUnauthorized: false
-        },
-        family: 4, // Strict IPv4 socket (prevents ENETUNREACH on IPv6)
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
+        req.on("error", (err) => reject(err));
+        req.on("timeout", () => {
+            req.destroy();
+            reject(new Error("Resend API timed out"));
+        });
+        req.write(payload);
+        req.end();
     });
 }
 
 /**
- * Send OTP Email (High Deliverability, Inbox-Optimized)
- * @param {string} toEmail - Recipient email address
- * @param {string} otp - 6-digit OTP code
- * @param {string} type - "verification" | "reset"
+ * Send email via Brevo HTTP API (Port 443 HTTPS - 100% unblocked on Render)
+ */
+function sendViaBrevo(apiKey, toEmail, subject, text, html) {
+    const senderEmail = (process.env.EMAIL_USER || "onkarghayal1@gmail.com").trim();
+    const payload = JSON.stringify({
+        sender: { name: "Kharchee", email: senderEmail },
+        to: [{ email: toEmail }],
+        subject: subject,
+        textContent: text,
+        htmlContent: html
+    });
+
+    return new Promise((resolve, reject) => {
+        const req = https.request(
+            {
+                hostname: "api.brevo.com",
+                port: 443,
+                path: "/v3/smtp/email",
+                method: "POST",
+                headers: {
+                    "api-key": apiKey.trim(),
+                    "Content-Type": "application/json",
+                    "Content-Length": Buffer.byteLength(payload)
+                },
+                timeout: 10000
+            },
+            (res) => {
+                let body = "";
+                res.on("data", (chunk) => (body += chunk));
+                res.on("end", () => {
+                    try {
+                        const data = JSON.parse(body);
+                        if (res.statusCode >= 200 && res.statusCode < 300) {
+                            resolve({ success: true, messageId: data.messageId, provider: "brevo" });
+                        } else {
+                            reject(new Error(data.message || body));
+                        }
+                    } catch (e) {
+                        reject(new Error(body));
+                    }
+                });
+            }
+        );
+
+        req.on("error", (err) => reject(err));
+        req.on("timeout", () => {
+            req.destroy();
+            reject(new Error("Brevo API timed out"));
+        });
+        req.write(payload);
+        req.end();
+    });
+}
+
+/**
+ * Fallback: Nodemailer SMTP
+ */
+function getSmtpTransporter() {
+    const emailUser = (process.env.EMAIL_USER || "").trim();
+    const emailPass = (process.env.EMAIL_PASS || "").replace(/[^a-zA-Z0-9]/g, "").trim();
+
+    if (!emailUser || !emailPass) return null;
+
+    return nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        requireTLS: true,
+        auth: { user: emailUser, pass: emailPass },
+        tls: { rejectUnauthorized: false },
+        family: 4,
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
+    });
+}
+
+/**
+ * Universal Send OTP Email
  */
 async function sendOtpEmail(toEmail, otp, type = "verification") {
     const isVerification = type === "verification";
@@ -55,7 +152,6 @@ async function sendOtpEmail(toEmail, otp, type = "verification") {
         ? "Please enter the verification code below to complete your registration and activate your account."
         : "We received a request to reset your password. Enter this code to set a new password.";
 
-    // Plain text version (Crucial for Gmail inbox placement and spam filter bypass)
     const text = `
 Hello,
 
@@ -71,7 +167,6 @@ If you did not request this code, you can safely ignore this email.
 https://kharchee.vercel.app
 `;
 
-    // Responsive HTML version
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -85,8 +180,6 @@ https://kharchee.vercel.app
     <tr>
       <td align="center">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
-          
-          <!-- Header Banner -->
           <tr>
             <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 28px 24px; text-align: center;">
               <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
@@ -97,8 +190,6 @@ https://kharchee.vercel.app
               </p>
             </td>
           </tr>
-
-          <!-- Main Content Body -->
           <tr>
             <td style="padding: 32px 28px; text-align: center;">
               <h2 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #0f172a;">
@@ -107,8 +198,6 @@ https://kharchee.vercel.app
               <p style="margin: 0 0 24px 0; font-size: 14.5px; line-height: 1.6; color: #475569;">
                 ${actionText}
               </p>
-
-              <!-- OTP Code Display Box -->
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 24px 0;">
                 <tr>
                   <td align="center">
@@ -118,7 +207,6 @@ https://kharchee.vercel.app
                   </td>
                 </tr>
               </table>
-
               <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b; font-weight: 600;">
                 ⏱️ Valid for 10 minutes
               </p>
@@ -127,14 +215,11 @@ https://kharchee.vercel.app
               </p>
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8;">
               &copy; ${new Date().getFullYear()} Kharchee. All rights reserved.
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -148,7 +233,30 @@ https://kharchee.vercel.app
     console.log(`👉 OTP Code: ${otp}`);
     console.log(`=================================================\n`);
 
-    const transporter = getTransporter();
+    // 1. Try Resend HTTP API (Fastest & 100% unblocked on Render)
+    if (process.env.RESEND_API_KEY) {
+        try {
+            const res = await sendViaResend(process.env.RESEND_API_KEY, toEmail, subject, text, html);
+            console.log(`✅ [Resend] Email delivered to: ${toEmail}`);
+            return res;
+        } catch (err) {
+            console.error("❌ Resend API error:", err.message);
+        }
+    }
+
+    // 2. Try Brevo HTTP API
+    if (process.env.BREVO_API_KEY) {
+        try {
+            const res = await sendViaBrevo(process.env.BREVO_API_KEY, toEmail, subject, text, html);
+            console.log(`✅ [Brevo] Email delivered to: ${toEmail}`);
+            return res;
+        } catch (err) {
+            console.error("❌ Brevo API error:", err.message);
+        }
+    }
+
+    // 3. Fallback to SMTP
+    const transporter = getSmtpTransporter();
     const emailUser = (process.env.EMAIL_USER || "").trim();
 
     if (transporter && emailUser) {
@@ -160,19 +268,19 @@ https://kharchee.vercel.app
                 text: text,
                 html: html
             });
-            console.log(`✅ Email successfully delivered to: ${toEmail} | ID: ${info.messageId}`);
-            return { success: true, messageId: info.messageId };
+            console.log(`✅ [SMTP] Email delivered to: ${toEmail} | ID: ${info.messageId}`);
+            return { success: true, messageId: info.messageId, provider: "smtp" };
         } catch (err) {
-            console.error("❌ Gmail SMTP delivery failed:", err.message);
-            if (err.message && err.message.includes("Username and Password not accepted")) {
-                console.error("👉 Reason: Google rejected the credentials. Ensure EMAIL_USER and EMAIL_PASS are correct.");
-            }
-            return { success: false, error: err.message };
+            console.error("❌ SMTP Delivery failed:", err.message);
+            return { success: false, error: err.message, hint: "Render Free tier blocks SMTP ports 25/465/587. Add RESEND_API_KEY to Render for instant HTTP delivery." };
         }
-    } else {
-        console.warn("⚠️ EMAIL_USER or EMAIL_PASS is not set in environment variables.");
-        return { success: false, error: "EMAIL_USER or EMAIL_PASS not configured in environment" };
     }
+
+    return {
+        success: false,
+        error: "No email provider configured",
+        hint: "Add RESEND_API_KEY (from https://resend.com) to your Render environment variables."
+    };
 }
 
 module.exports = { sendOtpEmail };
