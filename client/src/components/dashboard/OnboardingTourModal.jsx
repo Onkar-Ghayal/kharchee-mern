@@ -8,11 +8,11 @@ const TOUR_STEPS = [
         title: "Adding Friends",
         headline: "Track shared expenses with 0 initial balance",
         description:
-            "Click '+ Add Friend' to add friends by name, their compulsory WhatsApp mobile number, and optional UPI ID (GPay / PhonePe) for 1-tap direct payments.",
+            "Click '+ Add Friend' to add friends by name and their WhatsApp mobile number. Every friend starts with a clean ₹0 ledger.",
         highlights: [
             "✨ Fresh ledger starting at ₹0",
             "📱 WhatsApp number for 1-tap reminders",
-            "💳 Attached UPI ID for instant direct payments"
+            "⚡ Fast & easy friend management"
         ]
     },
     {
@@ -60,15 +60,15 @@ const TOUR_STEPS = [
     {
         step: 5,
         badge: "Step 5 of 7",
-        icon: "💳",
-        title: "1-Tap Settle & Reminders",
-        headline: "Direct Google Pay / PhonePe launch & WhatsApp alerts",
+        icon: "💬",
+        title: "WhatsApp Reminders & Settle",
+        headline: "Send friendly reminder messages & mark balances as settled",
         description:
-            "If you owe money, tap 'Pay' to launch Google Pay, PhonePe, or Paytm with return verification. If they owe you, tap 'Remind' to send a polite WhatsApp message.",
+            "When someone owes you money, tap 'Remind' to send a polite WhatsApp message with balance details. When settled, tap 'Settle' to balance the ledger back to ₹0.",
         highlights: [
-            "📲 Direct 1-Tap launch to GPay, PhonePe, Paytm",
             "💬 4 polite WhatsApp reminder styles with live preview",
-            "🔒 Fixed recipient locking prevents mistakes"
+            "✓ 1-Tap 'Settle' to balance ledger back to ₹0",
+            "🔒 100% private, safe & risk-free tracking"
         ]
     },
     {

@@ -7,9 +7,6 @@ import { useAuth } from "../context/AuthContext";
 import FriendCard from "../components/dashboard/FriendCard";
 import AddFriendModal from "../components/dashboard/AddFriendModal";
 import AddAmountModal from "../components/dashboard/AddAmountModal";
-import PaymentModal from "../components/dashboard/PaymentModal";
-import SetupUpiModal from "../components/dashboard/SetupUpiModal";
-import DesktopPayWarningModal from "../components/dashboard/DesktopPayWarningModal";
 import CalculatorModal from "../components/dashboard/CalculatorModal";
 import HistoryModal from "../components/dashboard/HistoryModal";
 import DeleteModal from "../components/dashboard/DeleteModal";
@@ -20,14 +17,6 @@ import SplitBillModal from "../components/dashboard/SplitBillModal";
 
 import "../styles/dashboard.css";
 import "../styles/auth.css";
-
-// Helper: Detect if user is on mobile (Android or iOS) vs laptop/desktop
-const isMobileDevice = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera || "";
-    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-    const isTouchScreen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 800;
-    return isMobileUA || isTouchScreen;
-};
 
 function useAnimatedValue(target) {
     const [display, setDisplay] = useState(0);
@@ -70,9 +59,6 @@ export default function Dashboard() {
     const [editingFriend, setEditingFriend] = useState(null);
 
     const [addAmountModalOpen, setAddAmountModalOpen] = useState(false);
-    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-    const [setupUpiOpen, setSetupUpiOpen] = useState(false);
-    const [desktopWarningOpen, setDesktopWarningOpen] = useState(false);
     const [pendingPayFriend, setPendingPayFriend] = useState(null);
 
     const [calculatorOpen, setCalculatorOpen] = useState(false);
@@ -210,33 +196,18 @@ export default function Dashboard() {
         setAddModalOpen(true);
     };
 
-    const handleAddFriendSubmit = async ({ name, mobile, qrCode, qrPlatform, qrRequestStatus, sendWhatsAppRequest }) => {
+    const handleAddFriendSubmit = async ({ name, mobile }) => {
         try {
             if (!editingFriend) {
-                const res = await api.post("/friends", {
+                await api.post("/friends", {
                     name,
-                    mobile,
-                    qrCode,
-                    qrPlatform,
-                    qrRequestStatus
+                    mobile
                 });
                 showToast("Friend added successfully with ₹0 balance", "success");
-
-                // If user chose to send QR request via WhatsApp at add time:
-                if (sendWhatsAppRequest && res.data && res.data._id) {
-                    const baseUrl = window.location.origin;
-                    const uploadUrl = `${baseUrl}/upload-qr/${res.data._id}`;
-                    const message = `Hey ${name}! Please upload your PhonePe / Google Pay / Paytm QR code screenshot so I can pay you directly on Kharchee: ${uploadUrl}`;
-                    const waUrl = `https://wa.me/91${mobile}?text=${encodeURIComponent(message)}`;
-                    window.open(waUrl, "_blank");
-                }
             } else {
                 await api.put(`/friends/${editingFriend._id}`, {
                     name,
-                    mobile,
-                    qrCode,
-                    qrPlatform,
-                    qrRequestStatus
+                    mobile
                 });
                 showToast("Friend details updated", "info");
             }
@@ -244,36 +215,6 @@ export default function Dashboard() {
             fetchFriends();
         } catch (err) {
             showToast(err.response?.data?.message || "Something went wrong", "error");
-        }
-    };
-
-    /* ================= PAYMENT (QR Code / UPI / Ledger Settle) ================= */
-    const openPaymentModal = (friend = null) => {
-        setActiveFriend(friend);
-        setPaymentModalOpen(true);
-    };
-
-    const handleUpiSetupSuccess = (updatedFriend) => {
-        setSetupUpiOpen(false);
-        setPendingPayFriend(null);
-        setActiveFriend(updatedFriend);
-        fetchFriends();
-        setPaymentModalOpen(true);
-    };
-
-    const handlePaymentSubmit = async (friendId, { amount, description, upiApp }) => {
-        try {
-            const res = await api.post(`/friends/${friendId}/payment`, {
-                amount,
-                description,
-                upiApp
-            });
-            showToast(`Payment of ₹${amount} recorded successfully!`, "success");
-            fetchFriends();
-            return res.data;
-        } catch (err) {
-            showToast(err.response?.data?.message || "Payment recording failed", "error");
-            throw err;
         }
     };
 
@@ -583,7 +524,6 @@ export default function Dashboard() {
                             key={friend._id}
                             friend={friend}
                             onAddAmount={openAddAmountModal}
-                            onPay={openPaymentModal}
                             onRemind={openReminderModal}
                             onSettle={openSettle}
                             onCalculate={openCalculator}
@@ -595,40 +535,12 @@ export default function Dashboard() {
                 </div>
             </section>
 
-            {/* 1. Add / Edit Friend Modal (Name & Mobile with warning notice, default 0 balance) */}
+            {/* 1. Add / Edit Friend Modal (Name & Mobile, default 0 balance) */}
             <AddFriendModal
                 open={addModalOpen}
                 editingFriend={editingFriend}
                 onClose={() => setAddModalOpen(false)}
                 onSubmit={handleAddFriendSubmit}
-            />
-
-            {/* 2. Direct Payment Modal (UPI QR Code, Google Pay, PhonePe, and Ledger Update) */}
-            <PaymentModal
-                open={paymentModalOpen}
-                friends={allFriends}
-                preselectedFriend={activeFriend}
-                onClose={() => setPaymentModalOpen(false)}
-                onPaymentSuccess={handlePaymentSubmit}
-                onFriendUpdated={fetchFriends}
-            />
-
-            {/* 3. Setup UPI Modal (Prompt when clicking Pay on friend without UPI) */}
-            <SetupUpiModal
-                open={setupUpiOpen}
-                friend={pendingPayFriend}
-                onClose={() => {
-                    setSetupUpiOpen(false);
-                    setPendingPayFriend(null);
-                }}
-                onSuccess={handleUpiSetupSuccess}
-            />
-
-            {/* 4. Desktop / Laptop Payment Warning Modal */}
-            <DesktopPayWarningModal
-                open={desktopWarningOpen}
-                friendName={activeFriend?.name || "your friend"}
-                onClose={() => setDesktopWarningOpen(false)}
             />
 
             {/* 5. Manual Add Amount Modal */}

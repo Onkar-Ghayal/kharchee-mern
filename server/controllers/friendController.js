@@ -1,11 +1,11 @@
 const Friend = require("../models/Friend");
 
 /* ==========================================================================
-   1. ADD FRIEND (Name, WhatsApp Number, optional QR Code & Platform)
+   1. ADD FRIEND (Name, WhatsApp Number)
    ========================================================================== */
 exports.addFriend = async (req, res) => {
     try {
-        const { name, mobile, qrCode, qrPlatform, qrRequestStatus, qrRequestedAt } = req.body;
+        const { name, mobile } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({ message: "Friend name is required" });
@@ -19,10 +19,6 @@ exports.addFriend = async (req, res) => {
             user: req.user._id,
             name: name.trim(),
             mobile: mobile.trim(),
-            qrCode: qrCode || "",
-            qrPlatform: qrPlatform ? qrPlatform.trim() : "",
-            qrRequestStatus: qrRequestStatus || "not_requested",
-            qrRequestedAt: qrRequestedAt ? new Date(qrRequestedAt) : null,
             currentAmount: 0,
             history: []
         });
@@ -50,11 +46,11 @@ exports.getFriends = async (req, res) => {
 };
 
 /* ==========================================================================
-   3. EDIT FRIEND DETAILS (Name, WhatsApp Number, QR Code, QR Platform)
+   3. EDIT FRIEND DETAILS (Name, WhatsApp Number)
    ========================================================================== */
 exports.updateFriend = async (req, res) => {
     try {
-        const { name, mobile, qrCode, qrPlatform, qrRequestStatus, qrRequestedAt } = req.body;
+        const { name, mobile } = req.body;
         const friend = await Friend.findOne({ _id: req.params.id, user: req.user._id });
 
         if (!friend) {
@@ -63,13 +59,6 @@ exports.updateFriend = async (req, res) => {
 
         if (name && name.trim()) friend.name = name.trim();
         if (typeof mobile !== "undefined") friend.mobile = mobile.trim();
-        if (typeof qrCode !== "undefined") {
-            friend.qrCode = qrCode;
-            if (qrCode) friend.qrRequestStatus = "uploaded";
-        }
-        if (typeof qrPlatform !== "undefined") friend.qrPlatform = qrPlatform.trim();
-        if (typeof qrRequestStatus !== "undefined") friend.qrRequestStatus = qrRequestStatus;
-        if (typeof qrRequestedAt !== "undefined") friend.qrRequestedAt = qrRequestedAt;
 
         await friend.save();
         res.json(friend);
@@ -350,80 +339,6 @@ exports.splitBill = async (req, res) => {
     } catch (error) {
         console.error("Split bill error:", error);
         res.status(500).json({ message: "Server error splitting group bill" });
-    }
-};
-
-/* ==========================================================================
-   11. GET PUBLIC FRIEND QR INFO (For Friend Upload Page)
-   ========================================================================== */
-exports.getPublicFriendQr = async (req, res) => {
-    try {
-        const friend = await Friend.findById(req.params.id).populate("user", "name email");
-        if (!friend) {
-            return res.status(404).json({ message: "Invalid or expired payment link" });
-        }
-
-        res.json({
-            friendId: friend._id,
-            friendName: friend.name,
-            requestedBy: friend.user ? friend.user.name : "Your Friend",
-            qrCode: friend.qrCode || "",
-            qrPlatform: friend.qrPlatform || "Google Pay",
-            qrRequestStatus: friend.qrRequestStatus || "not_requested"
-        });
-    } catch (error) {
-        console.error("Get public QR error:", error);
-        res.status(500).json({ message: "Server error fetching QR info" });
-    }
-};
-
-/* ==========================================================================
-   12. UPLOAD PUBLIC FRIEND QR (By Friend on WhatsApp Link)
-   ========================================================================== */
-exports.uploadPublicFriendQr = async (req, res) => {
-    try {
-        const { qrCode, qrPlatform } = req.body;
-
-        if (!qrCode) {
-            return res.status(400).json({ message: "Please upload a QR code screenshot" });
-        }
-
-        const friend = await Friend.findById(req.params.id);
-        if (!friend) {
-            return res.status(404).json({ message: "Friend record not found" });
-        }
-
-        friend.qrCode = qrCode;
-        if (qrPlatform) friend.qrPlatform = qrPlatform.trim();
-        friend.qrRequestStatus = "uploaded";
-
-        await friend.save();
-        res.json({ message: "QR Code uploaded successfully!", qrCode: friend.qrCode, qrPlatform: friend.qrPlatform });
-    } catch (error) {
-        console.error("Upload public QR error:", error);
-        res.status(500).json({ message: "Server error uploading QR code" });
-    }
-};
-
-/* ==========================================================================
-   13. UPDATE QR REQUEST STATUS (Sent WhatsApp Request)
-   ========================================================================== */
-exports.updateQrStatus = async (req, res) => {
-    try {
-        const { status } = req.body;
-        const friend = await Friend.findOne({ _id: req.params.id, user: req.user._id });
-        if (!friend) {
-            return res.status(404).json({ message: "Friend not found" });
-        }
-
-        friend.qrRequestStatus = status || "pending";
-        if (status === "pending") {
-            friend.qrRequestedAt = new Date();
-        }
-        await friend.save();
-        res.json(friend);
-    } catch (error) {
-        res.status(500).json({ message: "Server error updating QR request status" });
     }
 };
 

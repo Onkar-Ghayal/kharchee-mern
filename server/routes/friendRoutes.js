@@ -13,21 +13,13 @@ const {
     clearHistory,
     deleteTransaction,
     settleFriend,
-    splitBill,
-    getPublicFriendQr,
-    uploadPublicFriendQr,
-    updateQrStatus
+    splitBill
 } = require("../controllers/friendController");
-
-// Public QR endpoints (No JWT required - Friend opens WhatsApp link)
-router.get("/public-qr/:id", getPublicFriendQr);
-router.post("/public-qr/:id", uploadPublicFriendQr);
 
 // Protected routes (Logged-in user)
 router.post("/split-bill", protect, splitBill);
 router.post("/", protect, addFriend);
 router.get("/", protect, getFriends);
-router.put("/:id/qr-status", protect, updateQrStatus);
 router.put("/:id", protect, updateFriend);
 router.put("/:id/amount", protect, updateAmount);
 router.post("/:id/payment", protect, recordPayment);

@@ -13,7 +13,6 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
-import PublicQrUpload from "./pages/PublicQrUpload";
 
 export default function App() {
     return (
@@ -22,7 +21,6 @@ export default function App() {
                 <ToastProvider>
                     <Routes>
                         <Route path="/" element={<Home />} />
-                        <Route path="/upload-qr/:friendId" element={<PublicQrUpload />} />
 
                         <Route
                             path="/login"

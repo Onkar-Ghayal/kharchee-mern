@@ -1,7 +1,6 @@
 export default function FriendCard({
     friend,
     onAddAmount,
-    onPay,
     onRemind,
     onSettle,
     onCalculate,
@@ -11,7 +10,6 @@ export default function FriendCard({
 }) {
     const isLoss = friend.currentAmount < 0;
     const isZero = friend.currentAmount === 0;
-    const showSettleBtn = !isZero;
 
     const initial = friend.name ? friend.name.charAt(0).toUpperCase() : "F";
 
@@ -40,20 +38,10 @@ export default function FriendCard({
                     <button
                         className="action-btn primary-add"
                         onClick={() => onAddAmount(friend)}
-                        title="Add transaction amount"
+                        title="Add or update amount"
                     >
                         + Add
                     </button>
-
-                    {isLoss && (
-                        <button
-                            className="action-btn pay-btn"
-                            onClick={() => onPay(friend)}
-                            title="Pay friend via UPI"
-                        >
-                            Pay
-                        </button>
-                    )}
 
                     {!isLoss && !isZero && (
                         <button
@@ -65,11 +53,11 @@ export default function FriendCard({
                         </button>
                     )}
 
-                    {showSettleBtn && (
+                    {!isZero && (
                         <button
                             className="action-btn settle-up"
                             onClick={() => onSettle(friend)}
-                            title="Settle balance"
+                            title="Mark balance as settled"
                         >
                             Settle
                         </button>
