@@ -14,7 +14,6 @@ export default function Profile() {
     // Form edit states
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState("");
-    const [mobile, setMobile] = useState("");
     const [saving, setSaving] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
@@ -35,7 +34,6 @@ export default function Profile() {
 
             setUser(profileRes.data);
             setName(profileRes.data.name || "");
-            setMobile(profileRes.data.mobile || "");
 
             // Compute user summary stats
             const friends = friendsRes.data || [];
@@ -64,7 +62,7 @@ export default function Profile() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Save profile text details (Name & Mobile)
+    // Save profile text details (Name)
     const handleSave = async (e) => {
         e.preventDefault();
         if (!name.trim()) {
@@ -75,8 +73,7 @@ export default function Profile() {
         setSaving(true);
         try {
             const res = await api.put("/auth/profile", {
-                name: name.trim(),
-                mobile: mobile.trim()
+                name: name.trim()
             });
 
             setUser(res.data.user);
@@ -348,18 +345,6 @@ export default function Profile() {
                                     />
                                 </div>
 
-                                <div className="form-group">
-                                    <label className="form-label">Mobile Number (Optional)</label>
-                                    <input
-                                        type="tel"
-                                        className="form-input"
-                                        placeholder="10-digit mobile number"
-                                        value={mobile}
-                                        maxLength={15}
-                                        onChange={(e) => setMobile(e.target.value)}
-                                    />
-                                </div>
-
                                 <div className="edit-btn-group">
                                     <button type="submit" className="btn-save-profile" disabled={saving}>
                                         {saving ? "Saving Changes..." : "Save Changes"}
@@ -369,7 +354,6 @@ export default function Profile() {
                                         className="btn-cancel-profile"
                                         onClick={() => {
                                             setName(user?.name || "");
-                                            setMobile(user?.mobile || "");
                                             setIsEditing(false);
                                         }}
                                     >
@@ -395,26 +379,6 @@ export default function Profile() {
                                             <span className="detail-val">{user?.email}</span>
                                             <span className="verified-chip">✓ Verified</span>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div className="detail-item-box">
-                                    <div className="detail-item-icon">📱</div>
-                                    <div className="detail-item-content">
-                                        <span className="detail-label">Mobile Number</span>
-                                        <span className="detail-val">
-                                            {user?.mobile ? `+91 ${user.mobile}` : "Not attached"}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="detail-item-box">
-                                    <div className="detail-item-icon">🔑</div>
-                                    <div className="detail-item-content">
-                                        <span className="detail-label">Login Method</span>
-                                        <span className="detail-val">
-                                            {user?.authProvider === "google" ? "Google Account (OAuth 2.0)" : "Email & Password"}
-                                        </span>
                                     </div>
                                 </div>
                             </div>
