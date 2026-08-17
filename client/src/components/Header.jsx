@@ -154,7 +154,7 @@ export default function Header({
                                         </div>
                                         <div className="dropdown-divider"></div>
                                         <Link to="/analytics" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                                            📊 Analytics & Insights
+                                            📊 Analytics
                                         </Link>
                                         <Link to="/profile" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                                             👤 Profile Settings
