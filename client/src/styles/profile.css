@@ -8,7 +8,7 @@
     min-height: 100vh;
     background-color: var(--bg-primary);
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 .profile-container {
