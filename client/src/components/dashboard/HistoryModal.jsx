@@ -212,15 +212,17 @@ function HistoryModalContent({
                 {/* Search & Date Filter Section */}
                 {!isEmpty && (
                     <div className="history-search-filter-section">
-                        {/* Search Input */}
-                        <div className="history-search-wrap">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="history-search-icon">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
+                        {/* Search Input Box with Flex Icon (100% collision proof) */}
+                        <div className="history-search-flex-box">
+                            <div className="history-search-icon-slot">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </div>
                             <input
                                 type="text"
-                                className="history-search-input"
+                                className="history-search-native-input"
                                 placeholder="Search note, amount, date..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -228,7 +230,7 @@ function HistoryModalContent({
                             {searchQuery && (
                                 <button
                                     type="button"
-                                    className="history-search-clear-btn"
+                                    className="history-search-clear-slot"
                                     onClick={() => setSearchQuery("")}
                                     aria-label="Clear search"
                                     title="Clear search"
@@ -245,7 +247,7 @@ function HistoryModalContent({
                                 className={`history-pill-btn ${activeFilter === "all" ? "active" : ""}`}
                                 onClick={() => setActiveFilter("all")}
                             >
-                                All Time
+                                All
                             </button>
                             <button
                                 type="button"
