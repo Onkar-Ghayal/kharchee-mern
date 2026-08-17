@@ -353,7 +353,6 @@ export default function Dashboard() {
             <Header
                 variant="dashboard"
                 friends={allFriends}
-                onPay={openPaymentModal}
                 onRemind={openReminderModal}
             />
 

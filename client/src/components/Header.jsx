@@ -15,7 +15,6 @@ import NotificationCenter from "./NotificationCenter";
 export default function Header({
     variant = "public",
     friends = [],
-    onPay,
     onRemind
 }) {
     const { logout, user } = useAuth();
@@ -128,7 +127,6 @@ export default function Header({
                             {/* Notification Center */}
                             <NotificationCenter
                                 friends={friends}
-                                onPay={onPay}
                                 onRemind={onRemind}
                             />
 

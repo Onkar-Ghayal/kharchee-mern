@@ -122,7 +122,7 @@ export default function NotificationCenter({
                                     type: "payment",
                                     createdAt: itemTime,
                                     title: "Payment Recorded",
-                                    message: `Recorded payment of ₹${itemAmount.toLocaleString("en-IN")} to ${friendName} via ${friend.upiApp || "UPI"}.`,
+                                    message: `Recorded payment of ₹${itemAmount.toLocaleString("en-IN")} with ${friendName}.`,
                                     time: formatRelativeTime(itemTime)
                                 });
                             }
