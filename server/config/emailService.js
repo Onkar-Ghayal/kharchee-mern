@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 /**
  * Helper to build sanitized Gmail SMTP Transporter
  * Automatically strips all spaces/dashes/quotes from EMAIL_PASS.
+ * Uses Port 587 with STARTTLS for maximum cloud hosting (Render/AWS) compatibility.
  */
 function getTransporter() {
     const emailUser = (process.env.EMAIL_USER || "").trim();
@@ -13,11 +14,20 @@ function getTransporter() {
     }
 
     return nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false, // false for port 587 STARTTLS
+        requireTLS: true,
         auth: {
             user: emailUser,
             pass: emailPass
-        }
+        },
+        tls: {
+            rejectUnauthorized: false
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
     });
 }
 
@@ -152,12 +162,11 @@ https://kharchee.vercel.app
         } catch (err) {
             console.error("❌ Gmail SMTP delivery failed:", err.message);
             if (err.message && err.message.includes("Username and Password not accepted")) {
-                console.error("👉 Solution: Make sure EMAIL_USER is your Gmail, and EMAIL_PASS is a 16-letter App Password generated from https://myaccount.google.com/apppasswords");
+                console.error("👉 Reason: Google rejected the credentials. Ensure EMAIL_USER and EMAIL_PASS are correct.");
             }
         }
     } else {
-        console.warn("⚠️ EMAIL_USER or EMAIL_PASS is not set in your environment variables.");
-        console.warn("👉 Add EMAIL_USER and EMAIL_PASS to Render or server/.env to send real emails.");
+        console.warn("⚠️ EMAIL_USER or EMAIL_PASS is not set in environment variables.");
     }
 }
 
