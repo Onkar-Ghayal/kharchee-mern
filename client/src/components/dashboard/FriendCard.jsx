@@ -16,54 +16,60 @@ export default function FriendCard({
     const currentAmount = Math.abs(friend.currentAmount || 0);
 
     return (
-        <div className={`friend-card ${isLoss ? "loss-card" : isZero ? "settled-card" : "gain-card"}`}>
-            <div className="friend-card-top">
-                <div className="friend-avatar">{initial}</div>
-                <div className="friend-info">
-                    <h3 className="friend-name">{friend.name}</h3>
-                    {friend.mobile ? (
-                        <p className="friend-mobile">📱 {friend.mobile}</p>
-                    ) : (
-                        <p className="friend-mobile friend-mobile-empty">No mobile</p>
-                    )}
+        <div className={`friend-card ${isLoss ? "loss" : isZero ? "settled" : "gain"}`}>
+            <div className="friend-card-header">
+                <div className="friend-info-left">
+                    <div className="friend-avatar-badge">{initial}</div>
+                    <div className="friend-details-group">
+                        <h3 className="friend-name-title">{friend.name}</h3>
+                        {friend.mobile ? (
+                            <div className="friend-sub-meta">
+                                <span className="friend-phone-tag">📱 {friend.mobile}</span>
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
-                <div className="friend-amount-block">
-                    <span className="amount-label">
+
+                <div className="friend-balance-badge">
+                    <span className="balance-label">
                         {isLoss ? "You Owe" : isZero ? "Settled" : "You Will Get"}
                     </span>
-                    <span className={`amount-value ${isLoss ? "amount-loss" : isZero ? "amount-settled" : "amount-gain"}`}>
+                    <span className="balance-amount-text">
                         {isLoss ? "-" : isZero ? "" : "+"}₹{currentAmount.toLocaleString("en-IN")}
                     </span>
                 </div>
             </div>
 
-            <div className="friend-card-actions">
-                <div className="primary-actions">
+            <div className="card-actions-toolbar">
+                <div className="card-primary-actions-row">
                     <button
-                        className="btn-card-action btn-add-amount"
+                        className="action-btn primary-add"
                         onClick={() => onAddAmount(friend)}
+                        title="Add or update amount"
                     >
                         + Add
                     </button>
                     {!isLoss && !isZero && (
                         <button
-                            className="btn-card-action btn-remind"
+                            className="action-btn remind-btn"
                             onClick={() => onRemind(friend)}
+                            title="Send WhatsApp payment reminder"
                         >
                             Remind
                         </button>
                     )}
                     {!isZero && (
                         <button
-                            className="btn-card-action btn-settle"
+                            className="action-btn settle-up"
                             onClick={() => onSettle(friend)}
+                            title="Mark balance as settled"
                         >
                             Settle
                         </button>
                     )}
                 </div>
 
-                <div className="icon-actions">
+                <div className="action-icons-group">
                     {/* Calculator SVG */}
                     <button
                         className="action-btn-icon"
