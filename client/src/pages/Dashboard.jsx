@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import FriendCard from "../components/dashboard/FriendCard";
 import AddFriendModal from "../components/dashboard/AddFriendModal";
 import AddAmountModal from "../components/dashboard/AddAmountModal";
-import CalculatorModal from "../components/dashboard/CalculatorModal";
+import FloatingCalculatorWidget from "../components/dashboard/FloatingCalculatorWidget";
 import HistoryModal from "../components/dashboard/HistoryModal";
 import DeleteModal from "../components/dashboard/DeleteModal";
 import SettleModal from "../components/dashboard/SettleModal";
@@ -62,7 +62,6 @@ export default function Dashboard() {
     const [addAmountModalOpen, setAddAmountModalOpen] = useState(false);
     const [pendingPayFriend, setPendingPayFriend] = useState(null);
 
-    const [calculatorOpen, setCalculatorOpen] = useState(false);
     const [presetAmount, setPresetAmount] = useState("");
     const [presetType, setPresetType] = useState("gain");
     const [presetDescription, setPresetDescription] = useState("");
@@ -240,21 +239,6 @@ export default function Dashboard() {
         } catch {
             showToast("Failed to add amount", "error");
         }
-    };
-
-    /* ================= CALCULATOR ================= */
-    const openCalculator = (friend) => {
-        setActiveFriend(friend);
-        setCalculatorOpen(true);
-    };
-
-    const handleUseCalculated = (result) => {
-        setCalculatorOpen(false);
-        const absVal = Math.abs(result);
-        setPresetAmount(absVal > 0 ? String(absVal) : "");
-        setPresetType(result < 0 ? "loss" : "gain");
-        setPresetDescription("");
-        setAddAmountModalOpen(true);
     };
 
     /* ================= HISTORY ================= */
@@ -566,13 +550,8 @@ export default function Dashboard() {
                 onSubmit={handleAddAmountSubmit}
             />
 
-            {/* 6. Built-in Calculator Modal */}
-            <CalculatorModal
-                open={calculatorOpen}
-                initialValue={activeFriend?.currentAmount}
-                onClose={() => setCalculatorOpen(false)}
-                onUse={handleUseCalculated}
-            />
+            {/* 6. Floating Animated Quick Calculator Widget */}
+            <FloatingCalculatorWidget />
 
             {/* 7. Transaction History Modal */}
             <HistoryModal
