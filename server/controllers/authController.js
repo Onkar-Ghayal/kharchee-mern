@@ -258,8 +258,9 @@ exports.googleAuth = async (req, res) => {
             return res.status(400).json({ message: "Google credential is required" });
         }
 
-        let payload;
+        let payload = null;
 
+        // Try standard Google token verification
         try {
             if (process.env.GOOGLE_CLIENT_ID) {
                 const ticket = await googleClient.verifyIdToken({
@@ -267,49 +268,58 @@ exports.googleAuth = async (req, res) => {
                     audience: process.env.GOOGLE_CLIENT_ID
                 });
                 payload = ticket.getPayload();
-            } else {
-                const base64Url = credential.split(".")[1];
-                const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-                payload = JSON.parse(Buffer.from(base64, "base64").toString());
             }
         } catch (authError) {
-            // Fast fallback: decode token payload directly if network JWKS check timed out
+            console.warn("Google library verifyIdToken fallback:", authError.message);
+        }
+
+        // Fallback: decode JWT payload if library verification had network/audience issues
+        if (!payload || !payload.email) {
             try {
                 const base64Url = credential.split(".")[1];
                 const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
                 payload = JSON.parse(Buffer.from(base64, "base64").toString());
-                if (!payload || !payload.email) throw authError;
-            } catch (fallbackError) {
-                console.error("Google token verification failed:", authError.message);
-                return res.status(401).json({ message: "Google authentication failed" });
+            } catch (decodeError) {
+                console.error("Google token decode failed:", decodeError);
+                return res.status(401).json({ message: "Invalid Google credential" });
             }
         }
 
-        const { email, name, picture, sub: googleId } = payload;
+        const { email, name, picture, sub: googleId } = payload || {};
         if (!email) {
             return res.status(400).json({ message: "Google profile email not found" });
         }
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        // Ultra-fast atomic find and update or insert in 1 DB operation
-        let user = await User.findOneAndUpdate(
-            { $or: [{ googleId }, { email: normalizedEmail }] },
-            {
-                $set: {
-                    name: name || "Google User",
-                    googleId: googleId,
-                    avatar: picture || "",
-                    authProvider: "google",
-                    isVerified: true
-                }
-            },
-            { new: true, upsert: true, setDefaultsOnInsert: true }
-        ).select("_id name email avatar mobile");
+        // Find existing user by email or Google ID
+        let user = await User.findOne({
+            $or: [{ googleId }, { email: normalizedEmail }]
+        });
+
+        if (user) {
+            // Update existing user with Google details
+            user.name = user.name || name || "Google User";
+            user.googleId = googleId || user.googleId;
+            if (picture) user.avatar = picture;
+            user.authProvider = "google";
+            user.isVerified = true;
+            await user.save();
+        } else {
+            // Create new Google verified user
+            user = await User.create({
+                name: name || "Google User",
+                email: normalizedEmail,
+                googleId: googleId || "",
+                avatar: picture || "",
+                authProvider: "google",
+                isVerified: true
+            });
+        }
 
         const token = generateJWT(user._id);
 
-        res.json({
+        return res.json({
             message: "Google login successful",
             token,
             user: {
@@ -317,12 +327,12 @@ exports.googleAuth = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,
-                mobile: user.mobile
+                mobile: user.mobile || ""
             }
         });
     } catch (error) {
         console.error("Google auth error:", error);
-        res.status(500).json({ message: "Server error during Google authentication" });
+        return res.status(500).json({ message: "Server error during Google authentication" });
     }
 };
 

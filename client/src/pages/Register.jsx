@@ -140,7 +140,7 @@ export default function Register() {
                             shape="pill"
                             size="large"
                             text="signup_with"
-                            width="100%"
+                            width="340"
                         />
                     </div>
 

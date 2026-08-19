@@ -106,7 +106,7 @@ export default function Login() {
                             shape="pill"
                             size="large"
                             text="signin_with"
-                            width="100%"
+                            width="340"
                         />
                     </div>
 
