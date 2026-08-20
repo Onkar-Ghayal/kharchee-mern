@@ -1,12 +1,4 @@
 const mongoose = require("mongoose");
-const dns = require("dns");
-
-// Use public DNS (Google & Cloudflare) to resolve MongoDB Atlas SRV records reliably on all ISPs (Jio, Airtel, WiFi)
-try {
-    dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
-} catch (dnsErr) {
-    // Keep default if system prevents custom DNS
-}
 
 const connectDB = async () => {
     const mongoUri = process.env.MONGO_URI;
