@@ -18,32 +18,51 @@ connectDB();
 /* ================= ENV CONFIG ================= */
 const PORT = process.env.PORT || 5000;
 
-/* ================= SECURITY ================= */
-app.use(helmet());
+/* ================= SECURITY & HEADERS ================= */
+app.use(
+    helmet({
+        crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+    })
+);
 
-const limiter = rateLimit({
+// General API Rate Limiter (500 requests per 15 minutes)
+const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { message: "Too many requests. Please try again later." }
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many requests. Please try again in a few minutes." }
 });
-app.use(limiter);
+app.use("/api", generalLimiter);
+
+// Strict Auth Rate Limiter (25 attempts per 15 minutes for brute-force defense)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 25,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many authentication attempts. Please try again in 15 minutes." }
+});
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/forgot-password", authLimiter);
+app.use("/api/auth/resend-otp", authLimiter);
 
 app.use(compression());
 
 /* ================= CORS ================= */
-// Comma-separated list of allowed origins in CLIENT_URL, e.g.
-// CLIENT_URL=http://localhost:5173,https://kharchee.netlify.app
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173,https://kharchee.vercel.app")
     .split(",")
-    .map(origin => origin.trim());
+    .map(origin => origin.trim().replace(/\/$/, ""));
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
+        if (!origin) return callback(null, true);
+        const normalizedOrigin = origin.replace(/\/$/, "");
+        if (allowedOrigins.includes(normalizedOrigin) || normalizedOrigin.endsWith(".vercel.app")) {
+            return callback(null, true);
         }
+        return callback(null, false);
     },
     credentials: true
 }));

@@ -76,9 +76,10 @@ exports.updateFriend = async (req, res) => {
 exports.updateAmount = async (req, res) => {
     try {
         const { amount, description, mode } = req.body;
+        const numAmount = Number(amount);
 
-        if (typeof amount !== "number") {
-            return res.status(400).json({ message: "Invalid amount" });
+        if (isNaN(numAmount) || !isFinite(numAmount)) {
+            return res.status(400).json({ message: "Please provide a valid numeric amount" });
         }
 
         const friend = await Friend.findOne({ _id: req.params.id, user: req.user._id });
@@ -90,11 +91,11 @@ exports.updateAmount = async (req, res) => {
         let historyAmount;
 
         if (mode === "replace") {
-            historyAmount = amount - friend.currentAmount;
-            friend.currentAmount = amount;
+            historyAmount = numAmount - friend.currentAmount;
+            friend.currentAmount = numAmount;
         } else {
-            historyAmount = amount;
-            friend.currentAmount += amount;
+            historyAmount = numAmount;
+            friend.currentAmount += numAmount;
         }
 
         friend.history.unshift({

@@ -12,12 +12,8 @@ const {
     forgotPassword,
     resetPassword,
     getProfile,
-    updateProfile,
-    testEmail
+    updateProfile
 } = require("../controllers/authController");
-
-// Diagnostic Test Email
-router.get("/test-email", testEmail);
 
 // Authentication & Registration
 router.post("/register", registerUser);
