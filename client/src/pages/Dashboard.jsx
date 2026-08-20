@@ -517,7 +517,6 @@ export default function Dashboard() {
                             onAddAmount={openAddAmountModal}
                             onRemind={openReminderModal}
                             onSettle={openSettle}
-                            onCalculate={openCalculator}
                             onEdit={openEditModal}
                             onPDFStatement={openPDFModal}
                             onHistory={openHistory}
