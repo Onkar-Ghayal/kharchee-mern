@@ -21,11 +21,6 @@ export default function FriendCard({
                     <div className="friend-avatar-badge">{initial}</div>
                     <div className="friend-details-group">
                         <h3 className="friend-name-title">{friend.name}</h3>
-                        {friend.mobile ? (
-                            <div className="friend-sub-meta">
-                                <span className="friend-phone-tag">📱 {friend.mobile}</span>
-                            </div>
-                        ) : null}
                     </div>
                 </div>
 

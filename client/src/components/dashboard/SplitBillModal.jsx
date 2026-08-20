@@ -328,9 +328,6 @@ export default function SplitBillModal({
                                                 <div className="friend-chip-avatar">{initial}</div>
                                                 <div className="friend-chip-meta">
                                                     <span className="friend-chip-name">{f.name}</span>
-                                                    {f.mobile ? (
-                                                        <span className="friend-chip-phone">{f.mobile}</span>
-                                                    ) : null}
                                                 </div>
                                             </div>
                                         );
@@ -361,7 +358,6 @@ export default function SplitBillModal({
                                                     <div className="friend-chip-avatar">{initial}</div>
                                                     <div className="friend-chip-meta">
                                                         <span className="friend-row-name">{f.name}</span>
-                                                        {f.mobile && <span className="friend-row-phone">{f.mobile}</span>}
                                                     </div>
                                                 </div>
 
