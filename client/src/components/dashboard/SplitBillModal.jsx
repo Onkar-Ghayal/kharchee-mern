@@ -308,39 +308,44 @@ export default function SplitBillModal({
                         )}
 
                         {splitMode === "equal" ? (
-                            /* Equal Mode Chips without initial badges */
+                            /* Equal Mode Chips with Executive Avatars & Custom Checkmarks */
                             <div className="friends-checkbox-list">
                                 {filteredFriends.length === 0 ? (
                                     <p className="no-friends-text">No friends found.</p>
                                 ) : (
                                     filteredFriends.map((f) => {
                                         const isSelected = selectedFriendIds.includes(f._id);
+                                        const initial = f.name ? f.name.charAt(0).toUpperCase() : "F";
                                         return (
                                             <div
                                                 key={f._id}
                                                 className={`friend-select-chip ${isSelected ? "selected" : ""}`}
                                                 onClick={() => toggleFriend(f._id)}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isSelected}
-                                                    onChange={() => {}}
-                                                    className="friend-checkbox"
-                                                />
-                                                <span className="friend-chip-name">{f.name}</span>
+                                                <div className={`friend-chip-check ${isSelected ? "checked" : ""}`}>
+                                                    {isSelected && <span>✓</span>}
+                                                </div>
+                                                <div className="friend-chip-avatar">{initial}</div>
+                                                <div className="friend-chip-meta">
+                                                    <span className="friend-chip-name">{f.name}</span>
+                                                    {f.mobile ? (
+                                                        <span className="friend-chip-phone">{f.mobile}</span>
+                                                    ) : null}
+                                                </div>
                                             </div>
                                         );
                                     })
                                 )}
                             </div>
                         ) : (
-                            /* Custom Amounts Itemized Rows without initial badges */
+                            /* Custom Amounts Itemized Rows with Executive Avatars & Checkmarks */
                             <div className="custom-split-rows-list">
                                 {filteredFriends.length === 0 ? (
                                     <p className="no-friends-text">No friends found.</p>
                                 ) : (
                                     filteredFriends.map((f) => {
                                         const isSelected = selectedFriendIds.includes(f._id);
+                                        const initial = f.name ? f.name.charAt(0).toUpperCase() : "F";
                                         return (
                                             <div
                                                 key={f._id}
@@ -350,13 +355,14 @@ export default function SplitBillModal({
                                                     className="custom-friend-info"
                                                     onClick={() => toggleFriend(f._id)}
                                                 >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={() => {}}
-                                                        className="friend-checkbox"
-                                                    />
-                                                    <span className="friend-row-name">{f.name}</span>
+                                                    <div className={`friend-chip-check ${isSelected ? "checked" : ""}`}>
+                                                        {isSelected && <span>✓</span>}
+                                                    </div>
+                                                    <div className="friend-chip-avatar">{initial}</div>
+                                                    <div className="friend-chip-meta">
+                                                        <span className="friend-row-name">{f.name}</span>
+                                                        {f.mobile && <span className="friend-row-phone">{f.mobile}</span>}
+                                                    </div>
                                                 </div>
 
                                                 {isSelected ? (

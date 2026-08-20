@@ -3118,66 +3118,122 @@
 }
 
 .friends-checkbox-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    max-height: 160px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 0.65rem;
+    max-height: 220px;
     overflow-y: auto;
-    padding: 0.25rem 0.1rem;
+    padding: 0.35rem 0.15rem;
 }
 
 .friend-select-chip {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.75rem;
-    background: var(--bg-secondary);
-    border: 1.5px solid var(--border-light);
-    border-radius: 10px;
+    gap: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    background: var(--bg-card, #ffffff);
+    border: 1.5px solid var(--border-light, #e2e8f0);
+    border-radius: 14px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
+    box-sizing: border-box;
 }
 
 .dark-mode .friend-select-chip {
-    background: #0f172a;
-    border-color: #334155;
+    background: #111827;
+    border-color: #374151;
+}
+
+.friend-select-chip:hover {
+    border-color: var(--accent-primary, #6366f1);
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.dark-mode .friend-select-chip:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .friend-select-chip.selected {
-    background: rgba(245, 158, 11, 0.12);
-    border-color: #f59e0b;
-    color: #f59e0b;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border-color: var(--accent-primary, #6366f1);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.18);
 }
 
-.friend-checkbox {
-    pointer-events: none;
-    accent-color: #f59e0b;
-    width: 15px;
-    height: 15px;
+.dark-mode .friend-select-chip.selected {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.18) 100%);
+    border-color: #818cf8;
+}
+
+.friend-chip-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-light, #cbd5e1);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: #ffffff;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.dark-mode .friend-chip-check {
+    border-color: #4b5563;
+}
+
+.friend-chip-check.checked {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
 }
 
 .friend-chip-avatar {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--accent-primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: #ffffff;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+}
+
+.friend-chip-meta {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap: 0.1rem;
 }
 
 .friend-chip-name {
-    font-size: 0.825rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.friend-select-chip.selected .friend-chip-name {
-    color: var(--text-primary);
+.dark-mode .friend-chip-name {
+    color: #f8fafc;
+}
+
+.friend-chip-phone {
+    font-size: 0.7rem;
+    color: var(--text-secondary, #64748b);
+    white-space: nowrap;
+}
+
+.dark-mode .friend-chip-phone {
+    color: #94a3b8;
 }
 
 .no-friends-text {
@@ -3656,7 +3712,7 @@
     color: var(--text-secondary);
 }
 
-.modal-content .form-group input,
+.modal-content .form-group input:not([type="checkbox"]):not([type="radio"]),
 .modal-content .form-group select {
     width: 100%;
     padding: 0.75rem 0.95rem;
@@ -3670,14 +3726,14 @@
     box-sizing: border-box;
 }
 
-.dark-mode .modal-content .form-group input,
+.dark-mode .modal-content .form-group input:not([type="checkbox"]):not([type="radio"]),
 .dark-mode .modal-content .form-group select {
     background: #0f172a;
     border-color: #334155;
     color: #f8fafc;
 }
 
-.modal-content .form-group input:focus,
+.modal-content .form-group input:not([type="checkbox"]):not([type="radio"]):focus,
 .modal-content .form-group select:focus {
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
