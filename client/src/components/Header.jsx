@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import NotificationCenter from "./NotificationCenter";
+import InstallPwaButton from "./InstallPwaButton";
 
 /**
  * Header Component
@@ -70,6 +71,9 @@ export default function Header({
 
                 {/* Right-Side Actions */}
                 <div className="header-actions">
+                    {/* PWA Install Button */}
+                    <InstallPwaButton compact={variant === "dashboard" || variant === "back"} />
+
                     {/* Theme Toggle Button */}
                     <button
                         className="theme-toggle-btn"
