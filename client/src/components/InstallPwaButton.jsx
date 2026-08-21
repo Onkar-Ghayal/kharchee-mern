@@ -12,17 +12,16 @@ if (typeof window !== "undefined") {
 
 export default function InstallPwaButton({
     className = "",
-    compact = false,
-    asDropdownItem = false,
+    label = "Install App",
     onAfterClick = null
 }) {
     const [deferredPrompt, setDeferredPrompt] = useState(globalDeferredPrompt);
     const [isStandalone, setIsStandalone] = useState(false);
-    const [showIosModal, setShowIosModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [isIos, setIsIos] = useState(false);
 
     useEffect(() => {
-        // 1. Check if already installed & running standalone
+        // 1. Check if already running standalone as installed PWA
         const checkStandalone = () => {
             const isStand =
                 window.matchMedia("(display-mode: standalone)").matches ||
@@ -73,43 +72,45 @@ export default function InstallPwaButton({
                     globalDeferredPrompt = null;
                     setDeferredPrompt(null);
                 }
-            } catch (err) {
-                setShowIosModal(true);
+            } catch {
+                setShowModal(true);
             }
         } else {
-            // Show instructions modal if browser hasn't emitted prompt yet
-            setShowIosModal(true);
+            // Show guide modal if browser hasn't emitted native prompt
+            setShowModal(true);
         }
     };
 
     return (
         <>
-            {asDropdownItem ? (
-                <button
-                    type="button"
-                    className="dropdown-item pwa-dropdown-btn"
-                    onClick={handleInstallClick}
+            <button
+                type="button"
+                className={`btn-pwa-action ${className}`}
+                onClick={handleInstallClick}
+                title="Install Kharchee as App"
+                aria-label="Install App"
+            >
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="pwa-svg-icon"
                 >
-                    <span className="dropdown-item-icon">📲</span>
-                    <span>Install Kharchee App</span>
-                </button>
-            ) : (
-                <button
-                    type="button"
-                    className={`btn-pwa-install ${compact ? "compact" : ""} ${className}`}
-                    onClick={handleInstallClick}
-                    title="Install Kharchee as Mobile App"
-                    aria-label="Install App"
-                >
-                    <span className="pwa-install-icon">📲</span>
-                    <span className="pwa-install-text">{compact ? "Install" : "Install App"}</span>
-                    <span className="pwa-pulse-dot" />
-                </button>
-            )}
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>{label}</span>
+            </button>
 
             {/* Install Instructions Modal */}
-            {showIosModal && (
-                <div className="pwa-modal-overlay" onClick={() => setShowIosModal(false)}>
+            {showModal && (
+                <div className="pwa-modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="pwa-modal-card" onClick={(e) => e.stopPropagation()}>
                         <div className="pwa-modal-header">
                             <div className="pwa-modal-icon-wrap">
@@ -119,7 +120,7 @@ export default function InstallPwaButton({
                             <button
                                 type="button"
                                 className="pwa-modal-close"
-                                onClick={() => setShowIosModal(false)}
+                                onClick={() => setShowModal(false)}
                                 aria-label="Close"
                             >
                                 ✕
@@ -134,11 +135,11 @@ export default function InstallPwaButton({
                             <div className="pwa-step-item">
                                 <div className="pwa-step-number">1</div>
                                 <div className="pwa-step-info">
-                                    <strong>{isIos ? "Tap the Share button" : "Open Browser Options"}</strong>
+                                    <strong>{isIos ? "Tap the Share button" : "Open Browser Menu"}</strong>
                                     <span>
                                         {isIos
                                             ? "Tap the Share icon [ ⎋ / ↑ ] at the bottom of Safari."
-                                            : "Tap the 3-dot menu icon [ ⋮ ] in the top-right of Chrome / Edge."}
+                                            : "Tap the 3-dot menu icon [ ⋮ ] in your browser."}
                                     </span>
                                 </div>
                             </div>
@@ -157,111 +158,7 @@ export default function InstallPwaButton({
                         <button
                             type="button"
                             className="btn-pwa-gotit"
-                            onClick={() => setShowIosModal(false)}
-                        >
-                            Got It!
-                        </button>
-                    </div>
-                </div>
-            )}
-        </>
-    );
-}
-
-/**
- * Prominent Mobile Floating Banner for First-Time Mobile Visitors
- */
-export function MobileInstallFloatingBanner() {
-    const [visible, setVisible] = useState(false);
-    const [isStandalone, setIsStandalone] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-
-    useEffect(() => {
-        const isStand =
-            window.matchMedia("(display-mode: standalone)").matches ||
-            window.navigator.standalone === true ||
-            document.referrer.includes("android-app://");
-        setIsStandalone(isStand);
-
-        const dismissed = sessionStorage.getItem("pwa_banner_dismissed");
-        if (!isStand && !dismissed) {
-            // Show banner after 1.5s
-            const t = setTimeout(() => setVisible(true), 1500);
-            return () => clearTimeout(t);
-        }
-    }, []);
-
-    if (isStandalone || !visible) return null;
-
-    const handleDismiss = () => {
-        setVisible(false);
-        sessionStorage.setItem("pwa_banner_dismissed", "true");
-    };
-
-    const handleInstall = async () => {
-        if (globalDeferredPrompt) {
-            try {
-                globalDeferredPrompt.prompt();
-                const { outcome } = await globalDeferredPrompt.userChoice;
-                if (outcome === "accepted") {
-                    globalDeferredPrompt = null;
-                    setVisible(false);
-                }
-            } catch {
-                setShowModal(true);
-            }
-        } else {
-            setShowModal(true);
-        }
-    };
-
-    return (
-        <>
-            <div className="mobile-pwa-banner">
-                <div className="banner-left">
-                    <img src="/assets/images/logo.png" alt="Kharchee" className="banner-logo" />
-                    <div className="banner-text">
-                        <strong>Install Kharchee App</strong>
-                        <span>Faster 1-tap mobile experience</span>
-                    </div>
-                </div>
-                <div className="banner-actions">
-                    <button type="button" className="banner-btn-install" onClick={handleInstall}>
-                        Install
-                    </button>
-                    <button type="button" className="banner-btn-close" onClick={handleDismiss} aria-label="Dismiss">
-                        ✕
-                    </button>
-                </div>
-            </div>
-
-            {showModal && (
-                <div className="pwa-modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="pwa-modal-card" onClick={(e) => e.stopPropagation()}>
-                        <div className="pwa-modal-header">
-                            <div className="pwa-modal-icon-wrap">
-                                <img src="/assets/images/logo.png" alt="Kharchee" className="pwa-modal-logo" />
-                            </div>
-                            <h3>Install Kharchee App</h3>
-                            <button
-                                type="button"
-                                className="pwa-modal-close"
-                                onClick={() => setShowModal(false)}
-                                aria-label="Close"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <p className="pwa-modal-desc">
-                            Tap your browser's menu <strong>[ ⋮ ]</strong> and select <strong>"Add to Home Screen"</strong> or <strong>"Install app"</strong> to install Kharchee!
-                        </p>
-                        <button
-                            type="button"
-                            className="btn-pwa-gotit"
-                            onClick={() => {
-                                setShowModal(false);
-                                handleDismiss();
-                            }}
+                            onClick={() => setShowModal(false)}
                         >
                             Got It!
                         </button>

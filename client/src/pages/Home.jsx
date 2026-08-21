@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
+import InstallPwaButton from "../components/InstallPwaButton";
 import "../styles/home.css";
 
 export default function Home() {
@@ -36,6 +37,7 @@ export default function Home() {
                                 Get Started Free
                             </Link>
                         )}
+                        <InstallPwaButton className="btn-hero-install-pwa" label="Install App" />
                         <a href="#how-it-works" className="btn-secondary-cta">
                             How It Works
                         </a>

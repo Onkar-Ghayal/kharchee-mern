@@ -6,6 +6,7 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import OtpModal from "../components/auth/OtpModal";
+import InstallPwaButton from "../components/InstallPwaButton";
 import "../styles/auth.css";
 
 export default function Register() {
@@ -289,6 +290,9 @@ export default function Register() {
                                 "Create Account"
                             )}
                         </button>
+
+                        {/* Install App Button Below Sign Up Button */}
+                        <InstallPwaButton className="btn-auth-install-pwa" label="Install App" />
 
                         <div className="auth-footer-text">
                             Already have an account?{" "}

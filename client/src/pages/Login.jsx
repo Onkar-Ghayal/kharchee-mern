@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import OtpModal from "../components/auth/OtpModal";
 import ForgotPasswordModal from "../components/auth/ForgotPasswordModal";
+import InstallPwaButton from "../components/InstallPwaButton";
 import "../styles/auth.css";
 
 export default function Login() {
@@ -203,6 +204,9 @@ export default function Login() {
                                 "Sign In"
                             )}
                         </button>
+
+                        {/* Install App Button Below Sign In Button */}
+                        <InstallPwaButton className="btn-auth-install-pwa" label="Install App" />
 
                         <div className="auth-footer-text">
                             Don't have an account?{" "}

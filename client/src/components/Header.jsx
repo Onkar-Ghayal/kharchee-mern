@@ -3,7 +3,6 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import NotificationCenter from "./NotificationCenter";
-import InstallPwaButton from "./InstallPwaButton";
 
 /**
  * Header Component
@@ -71,9 +70,6 @@ export default function Header({
 
                 {/* Right-Side Actions */}
                 <div className="header-actions">
-                    {/* PWA Install Button */}
-                    <InstallPwaButton compact={variant === "dashboard" || variant === "back"} />
-
                     {/* Theme Toggle Button */}
                     <button
                         className="theme-toggle-btn"
@@ -157,8 +153,6 @@ export default function Header({
                                                 <span className="dropdown-item-icon">👤</span>
                                                 <span>Profile Settings</span>
                                             </Link>
-
-                                            <InstallPwaButton asDropdownItem={true} onAfterClick={() => setMenuOpen(false)} />
 
                                             <div className="dropdown-divider"></div>
 
@@ -255,7 +249,6 @@ export default function Header({
                                         <Link to="/profile" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                                             👤 Profile Settings
                                         </Link>
-                                        <InstallPwaButton asDropdownItem={true} onAfterClick={() => setMenuOpen(false)} />
                                         <div className="dropdown-divider"></div>
                                         <button className="dropdown-item text-danger" onClick={handleLogout}>
                                             🚪 Logout
