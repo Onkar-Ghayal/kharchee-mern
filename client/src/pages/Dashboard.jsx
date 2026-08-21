@@ -15,6 +15,7 @@ import WhatsAppReminderModal from "../components/dashboard/WhatsAppReminderModal
 import OnboardingTourModal from "../components/dashboard/OnboardingTourModal";
 import SplitBillModal from "../components/dashboard/SplitBillModal";
 import PDFStatementModal from "../components/dashboard/PDFStatementModal";
+import { MobileInstallFloatingBanner } from "../components/InstallPwaButton";
 
 import "../styles/dashboard.css";
 import "../styles/auth.css";
@@ -612,6 +613,9 @@ export default function Dashboard() {
                 userName={user?.name || "User"}
                 onClose={() => setPdfModalOpen(false)}
             />
+
+            {/* 14. Mobile PWA Install Floating Prompt */}
+            <MobileInstallFloatingBanner />
         </>
     );
 }

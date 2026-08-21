@@ -158,6 +158,8 @@ export default function Header({
                                                 <span>Profile Settings</span>
                                             </Link>
 
+                                            <InstallPwaButton asDropdownItem={true} onAfterClick={() => setMenuOpen(false)} />
+
                                             <div className="dropdown-divider"></div>
 
                                             <button
@@ -253,6 +255,7 @@ export default function Header({
                                         <Link to="/profile" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                                             👤 Profile Settings
                                         </Link>
+                                        <InstallPwaButton asDropdownItem={true} onAfterClick={() => setMenuOpen(false)} />
                                         <div className="dropdown-divider"></div>
                                         <button className="dropdown-item text-danger" onClick={handleLogout}>
                                             🚪 Logout
