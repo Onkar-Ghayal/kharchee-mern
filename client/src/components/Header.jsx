@@ -239,19 +239,35 @@ export default function Header({
                                 {menuOpen && (
                                     <div className="dropdown-panel">
                                         <div className="dropdown-user-info">
-                                            <p className="user-info-name">{user?.name || "User"}</p>
-                                            <p className="user-info-email">{user?.email || ""}</p>
+                                            <div className="dropdown-avatar">
+                                                {user?.avatar ? (
+                                                    <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                                                ) : (
+                                                    user?.name ? user.name.charAt(0).toUpperCase() : "U"
+                                                )}
+                                            </div>
+                                            <div className="dropdown-user-details">
+                                                <span className="dropdown-user-name" title={user?.name || "User"}>
+                                                    {user?.name || "User"}
+                                                </span>
+                                                <span className="dropdown-user-email" title={user?.email || ""}>
+                                                    {user?.email || ""}
+                                                </span>
+                                            </div>
                                         </div>
                                         <div className="dropdown-divider"></div>
                                         <Link to="/analytics" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                                            📊 Analytics
+                                            <span className="dropdown-item-icon">📊</span>
+                                            <span>Analytics</span>
                                         </Link>
                                         <Link to="/profile" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                                            👤 Profile Settings
+                                            <span className="dropdown-item-icon">👤</span>
+                                            <span>Profile Settings</span>
                                         </Link>
                                         <div className="dropdown-divider"></div>
                                         <button className="dropdown-item text-danger" onClick={handleLogout}>
-                                            🚪 Logout
+                                            <span className="dropdown-item-icon">🚪</span>
+                                            <span>Sign Out</span>
                                         </button>
                                     </div>
                                 )}
